@@ -1,0 +1,1703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#04070e">
+<title>SHADOW SYSTEM — Real-Life Fitness RPG</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================= BASE ============================= */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#04070e;
+  --panel:rgba(16,34,62,.55);
+  --panel-2:rgba(10,22,42,.62);
+  --line:rgba(88,196,255,.18);
+  --line-strong:rgba(88,196,255,.38);
+  --accent:#35e0ff;
+  --accent-2:#2f6bff;
+  --accent-soft:rgba(53,224,255,.14);
+  --gold:#ffcf5c;
+  --ok:#4dffb8;
+  --danger:#ff5c7a;
+  --text:#dfeefc;
+  --muted:#7c9cbd;
+  --radius:16px;
+  --nav-h:74px;
+}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:'IBM Plex Mono',monospace;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4,.font-display{font-family:'Chakra Petch',sans-serif;letter-spacing:.04em}
+button,input,select{font-family:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+input{background:rgba(6,16,32,.75);border:1px solid var(--line);border-radius:10px;padding:13px 15px;font-size:14px;width:100%;outline:none;transition:border-color .25s,box-shadow .25s}
+input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(53,224,255,.16)}
+::selection{background:rgba(53,224,255,.3)}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(53,224,255,.28);border-radius:8px}
+
+/* ============================= BACKDROP ============================= */
+.bg-fx{position:fixed;inset:0;z-index:-3;
+  background:
+    radial-gradient(65vw 65vw at 82% -12%, rgba(38,110,255,.22), transparent 62%),
+    radial-gradient(55vw 55vw at -12% 28%, rgba(53,224,255,.13), transparent 60%),
+    radial-gradient(85vw 70vw at 48% 118%, rgba(24,66,168,.22), transparent 62%),
+    linear-gradient(180deg,#04070e 0%,#060c1a 50%,#04070e 100%);}
+.bg-grid{position:fixed;inset:0;z-index:-2;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(88,196,255,.055) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(88,196,255,.055) 1px,transparent 1px);
+  background-size:46px 46px;
+  -webkit-mask-image:radial-gradient(ellipse 110% 85% at 50% 0%,#000 5%,transparent 78%);
+  mask-image:radial-gradient(ellipse 110% 85% at 50% 0%,#000 5%,transparent 78%);}
+.bg-orb{position:fixed;width:60vmax;height:60vmax;border-radius:50%;z-index:-1;pointer-events:none;
+  border:1px solid rgba(53,224,255,.07);}
+.orb-a{top:-22vmax;right:-24vmax;animation:drift 26s ease-in-out infinite alternate}
+.orb-b{bottom:-30vmax;left:-26vmax;width:52vmax;height:52vmax;animation:drift 32s ease-in-out infinite alternate-reverse}
+@keyframes drift{from{transform:translate3d(0,0,0) rotate(0deg)}to{transform:translate3d(-4vmax,3vmax,0) rotate(18deg)}}
+.scanlines{position:fixed;inset:0;z-index:9998;pointer-events:none;opacity:.5;
+  background:repeating-linear-gradient(0deg,rgba(4,7,14,0) 0 2px,rgba(4,7,14,.22) 2px 3px);}
+
+/* ============================= PRIMITIVES ============================= */
+.ic{width:20px;height:20px;flex:0 0 auto}
+.ic-sm{width:16px;height:16px}
+.ic-lg{width:26px;height:26px}
+.hidden{display:none !important}
+.muted{color:var(--muted)}
+.accent{color:var(--accent)}
+.gold{color:var(--gold)}
+
+.panel{position:relative;background:linear-gradient(158deg,rgba(21,44,78,.62),rgba(9,19,38,.6));
+  border:1px solid var(--line);border-radius:var(--radius);
+  -webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);
+  padding:18px;overflow:hidden}
+.panel::before,.panel::after{content:'';position:absolute;width:16px;height:16px;border:2px solid var(--accent);opacity:.5;pointer-events:none}
+.panel::before{top:8px;left:8px;border-right:0;border-bottom:0;border-top-left-radius:5px}
+.panel::after{bottom:8px;right:8px;border-left:0;border-top:0;border-bottom-right-radius:5px}
+.panel.flat::before,.panel.flat::after{display:none}
+.panel-title{font-family:'Chakra Petch',sans-serif;font-size:12px;font-weight:700;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--accent);display:flex;align-items:center;gap:9px;margin-bottom:14px}
+.panel-title::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--line-strong),transparent)}
+
+.section-head{margin-bottom:20px}
+.section-head h2{font-size:clamp(22px,6vw,32px);font-weight:700;text-transform:uppercase;
+  background:linear-gradient(100deg,#eaf7ff 10%,var(--accent) 55%,#7fb6ff 95%);
+  -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  line-height:1.1}
+.section-head p{margin-top:6px;font-size:12px;color:var(--muted);letter-spacing:.06em}
+
+.btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  font-family:'Chakra Petch',sans-serif;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+  font-size:12px;padding:13px 20px;border-radius:12px;transition:transform .18s ease,box-shadow .25s ease,background .25s ease,color .25s ease,border-color .25s;
+  clip-path:polygon(11px 0,100% 0,100% calc(100% - 11px),calc(100% - 11px) 100%,0 100%,0 11px)}
+.btn:active{transform:translateY(1px) scale(.985)}
+.btn.primary{background:linear-gradient(120deg,var(--accent) 0%,#48b4ff 55%,var(--accent-2) 100%);color:#02121f;
+  box-shadow:0 8px 26px -10px rgba(53,224,255,.85),0 0 0 1px rgba(140,235,255,.5) inset}
+.btn.primary:hover{box-shadow:0 12px 34px -8px rgba(53,224,255,.95),0 0 0 1px rgba(190,245,255,.8) inset}
+.btn.ghost{background:rgba(53,224,255,.08);color:var(--accent);border:1px solid var(--line-strong)}
+.btn.ghost:hover{background:rgba(53,224,255,.18);border-color:var(--accent)}
+.btn.gold-btn{background:linear-gradient(120deg,var(--gold),#ffa62e);color:#231500;
+  box-shadow:0 8px 26px -10px rgba(255,207,92,.8)}
+.btn.danger-btn{background:rgba(255,92,122,.13);color:var(--danger);border:1px solid rgba(255,92,122,.4)}
+.btn.danger-btn:hover{background:rgba(255,92,122,.25)}
+.btn.sm{padding:10px 14px;font-size:11px}
+.btn.block{width:100%}
+.btn:disabled{opacity:.42;cursor:not-allowed;transform:none;box-shadow:none}
+
+.tag{display:inline-flex;align-items:center;gap:5px;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;
+  padding:4px 9px;border-radius:20px;background:rgba(53,224,255,.1);color:var(--accent);border:1px solid rgba(53,224,255,.22);
+  font-weight:600;white-space:nowrap}
+.tag.xp{background:rgba(255,207,92,.1);color:var(--gold);border-color:rgba(255,207,92,.28)}
+.tag.ok{background:rgba(77,255,184,.1);color:var(--ok);border-color:rgba(77,255,184,.3)}
+.tag.warn{background:rgba(255,92,122,.1);color:var(--danger);border-color:rgba(255,92,122,.3)}
+.tag.plain{background:rgba(124,156,189,.1);color:var(--muted);border-color:rgba(124,156,189,.22)}
+
+.bar{position:relative;height:9px;border-radius:20px;background:rgba(10,24,46,.9);overflow:hidden;
+  border:1px solid rgba(88,196,255,.14)}
+.bar .fill{position:relative;height:100%;border-radius:20px;
+  background:linear-gradient(90deg,var(--accent-2),var(--accent));
+  box-shadow:0 0 14px rgba(53,224,255,.65);transition:width .6s cubic-bezier(.22,1,.36,1)}
+.bar .fill::after{content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);
+  transform:translateX(-100%);animation:sheen 2.8s ease-in-out infinite}
+.bar.gold-bar .fill{background:linear-gradient(90deg,#c78b1f,var(--gold));box-shadow:0 0 14px rgba(255,207,92,.55)}
+@keyframes sheen{0%{transform:translateX(-100%)}55%,100%{transform:translateX(220%)}}
+
+/* ============================= SYSBAR ============================= */
+.sysbar{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:12px;
+  padding:14px 16px calc(14px);background:linear-gradient(180deg,rgba(4,7,14,.94),rgba(4,7,14,.72) 70%,transparent);
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+.brand{display:flex;align-items:center;gap:11px;min-width:0}
+.brand-mark{width:38px;height:38px;flex:0 0 auto;display:grid;place-items:center;position:relative;
+  background:linear-gradient(140deg,rgba(53,224,255,.22),rgba(47,107,255,.16));border:1px solid var(--line-strong);
+  border-radius:11px;color:var(--accent);box-shadow:0 0 22px -6px rgba(53,224,255,.7)}
+.brand-mark::after{content:'';position:absolute;inset:-4px;border:1px solid rgba(53,224,255,.22);border-radius:14px;
+  animation:pulseRing 3.4s ease-out infinite}
+@keyframes pulseRing{0%{transform:scale(.9);opacity:.85}70%,100%{transform:scale(1.22);opacity:0}}
+.brand-text{min-width:0}
+.brand-text b{display:block;font-family:'Chakra Petch',sans-serif;font-size:14px;letter-spacing:.24em;
+  text-transform:uppercase;line-height:1.15;
+  background:linear-gradient(100deg,#fff,var(--accent));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.brand-text span{display:flex;align-items:center;gap:6px;font-size:8.5px;letter-spacing:.28em;color:var(--muted);text-transform:uppercase}
+.dot-live{width:5px;height:5px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px var(--ok);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.28}}
+.sysbar-right{margin-left:auto;display:flex;align-items:center;gap:9px}
+.rank-chip{display:inline-flex;align-items:center;gap:7px;padding:8px 12px;border-radius:11px;
+  background:rgba(53,224,255,.1);border:1px solid var(--line-strong);font-family:'Chakra Petch',sans-serif;
+  font-size:12px;font-weight:700;letter-spacing:.14em;color:var(--accent)}
+.rank-chip .lvl{color:var(--text);opacity:.75}
+.icon-btn{width:39px;height:39px;display:grid;place-items:center;border-radius:11px;color:var(--muted);
+  border:1px solid var(--line);background:rgba(10,22,42,.5);transition:all .22s}
+.icon-btn:hover{color:var(--accent);border-color:var(--line-strong);background:rgba(53,224,255,.12)}
+
+/* ============================= NAV ============================= */
+.main-nav{position:fixed;left:0;right:0;bottom:0;z-index:70;
+  display:grid;grid-template-columns:repeat(5,1fr);gap:4px;
+  padding:9px 8px calc(9px + env(safe-area-inset-bottom,0px));
+  background:linear-gradient(180deg,rgba(6,12,26,.2),rgba(5,10,22,.97) 42%);
+  border-top:1px solid var(--line);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+.nav-item{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  padding:9px 2px 6px;border-radius:13px;color:var(--muted);transition:color .22s,background .22s,transform .22s}
+.nav-item span{font-size:8.6px;letter-spacing:.17em;text-transform:uppercase;font-weight:600}
+.nav-item .nav-glow{position:absolute;top:0;left:50%;transform:translateX(-50%);width:26px;height:2.5px;border-radius:4px;
+  background:var(--accent);opacity:0;box-shadow:0 0 12px var(--accent);transition:opacity .25s}
+.nav-item.active{color:var(--accent);background:rgba(53,224,255,.1);transform:translateY(-2px)}
+.nav-item.active .nav-glow{opacity:1}
+
+/* ============================= LAYOUT ============================= */
+.app-main{padding:6px 16px calc(var(--nav-h) + 26px);max-width:1140px;margin:0 auto;width:100%}
+.view{display:none}
+.view.active{display:block;animation:viewIn .5s cubic-bezier(.22,1,.36,1)}
+@keyframes viewIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+.stack{display:grid;gap:15px}
+
+/* ============================= AUTH ============================= */
+#auth-screen{min-height:100vh;display:grid;place-items:center;padding:26px 18px;position:relative}
+.auth-wrap{width:100%;max-width:430px}
+.auth-hero{text-align:center;margin-bottom:26px}
+.auth-hero .glyph{width:82px;height:82px;margin:0 auto 18px;display:grid;place-items:center;position:relative;
+  border-radius:22px;border:1px solid var(--line-strong);color:var(--accent);
+  background:radial-gradient(circle at 32% 26%,rgba(53,224,255,.32),rgba(12,26,52,.85));box-shadow:0 0 50px -8px rgba(53,225,255,.55)}
+.auth-hero .glyph::after{content:'';position:absolute;inset:-9px;border:1px solid rgba(53,224,255,.25);border-radius:28px;animation:pulseRing 3.6s ease-out infinite}
+.auth-hero h1{font-size:clamp(28px,8vw,40px);letter-spacing:.18em;text-transform:uppercase;
+  background:linear-gradient(105deg,#fff 8%,var(--accent) 52%,#63a4ff 96%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+.auth-hero p{margin-top:10px;font-size:11.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
+.auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px}
+.auth-tab{padding:13px 8px;border-radius:12px;font-family:'Chakra Petch',sans-serif;font-size:11.5px;font-weight:700;
+  letter-spacing:.18em;text-transform:uppercase;color:var(--muted);border:1px solid var(--line);background:rgba(9,19,38,.5);transition:all .24s}
+.auth-tab.active{color:#02121f;background:linear-gradient(120deg,var(--accent),#4bb0ff);border-color:transparent;
+  box-shadow:0 10px 28px -12px rgba(53,224,255,.9)}
+.field{margin-bottom:13px}
+.field label{display:block;font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+.form-msg{min-height:18px;font-size:11px;letter-spacing:.05em;margin:4px 0 12px}
+.form-msg.err{color:var(--danger)}
+.form-msg.ok{color:var(--ok)}
+.auth-foot{margin-top:16px;text-align:center;font-size:10px;line-height:1.9;color:var(--muted);letter-spacing:.08em}
+.cloud-pill{display:inline-flex;align-items:center;gap:8px;padding:9px 14px;border-radius:20px;font-size:9.5px;
+  letter-spacing:.22em;text-transform:uppercase;border:1px solid var(--line);background:rgba(10,22,42,.6);color:var(--muted)}
+.cloud-pill.on{color:var(--ok);border-color:rgba(77,255,184,.35)}
+
+/* ============================= DASHBOARD ============================= */
+.hunter-card{position:relative;padding:22px 20px 20px}
+.hunter-top{display:flex;align-items:flex-start;gap:15px;flex-wrap:wrap}
+.avatar{width:62px;height:62px;flex:0 0 auto;display:grid;place-items:center;position:relative;border-radius:16px;
+  background:radial-gradient(circle at 30% 25%,rgba(53,224,255,.35),rgba(15,32,60,.9));border:1px solid var(--line-strong);color:var(--accent)}
+.avatar .lv{position:absolute;bottom:-9px;right:-9px;min-width:29px;height:29px;padding:0 6px;display:grid;place-items:center;
+  border-radius:9px;background:linear-gradient(135deg,var(--accent),var(--accent-2));color:#02121f;
+  font-family:'Chakra Petch',sans-serif;font-weight:700;font-size:12px;box-shadow:0 6px 18px -6px rgba(53,224,255,.9)}
+.hunter-id{flex:1;min-width:170px}
+.hunter-id .hname{font-family:'Chakra Petch',sans-serif;font-size:20px;font-weight:700;letter-spacing:.09em;
+  text-transform:uppercase;line-height:1.2;word-break:break-word}
+.hunter-id .hmeta{margin-top:5px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.rank-badge{position:relative;display:grid;place-items:center;width:62px;height:62px;flex:0 0 auto;
+  border-radius:14px;border:1px solid rgba(255,207,92,.45);background:radial-gradient(circle at 34% 26%,rgba(255,207,92,.28),rgba(38,26,4,.55));
+  font-family:'Chakra Petch',sans-serif;font-size:26px;font-weight:700;color:var(--gold);
+  box-shadow:0 0 30px -8px rgba(255,207,92,.55)}
+.rank-badge small{position:absolute;bottom:5px;font-size:7px;letter-spacing:.24em;color:var(--gold);opacity:.85}
+.xp-row{margin-top:18px}
+.xp-row .bar{height:12px}
+.xp-label{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px;
+  font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+.xp-label b{font-family:'Chakra Petch',sans-serif;font-size:13px;letter-spacing:.1em;color:var(--accent)}
+.stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:11px}
+.stat-card{position:relative;padding:15px 14px;border-radius:14px;border:1px solid var(--line);
+  background:linear-gradient(160deg,rgba(21,44,78,.55),rgba(9,19,38,.5));overflow:hidden}
+.stat-card .sc-head{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:9px;letter-spacing:.22em;text-transform:uppercase}
+.stat-card .sc-head .ic{color:var(--accent)}
+.stat-card .sc-val{margin-top:9px;font-family:'Chakra Petch',sans-serif;font-size:26px;font-weight:700;line-height:1;color:var(--text)}
+.stat-card .sc-val small{font-size:11px;color:var(--muted);margin-left:5px;letter-spacing:.12em}
+.stat-card .sc-bar{margin-top:10px;height:4px;border-radius:8px;background:rgba(88,196,255,.14);overflow:hidden}
+.stat-card .sc-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent-2),var(--accent));border-radius:8px}
+.stat-card::after{content:'';position:absolute;top:-34px;right:-34px;width:76px;height:76px;border-radius:50%;
+  background:radial-gradient(circle,rgba(53,224,255,.2),transparent 70%)}
+.streak-strip{display:flex;align-items:center;gap:13px;padding:15px 16px}
+.streak-flame{width:46px;height:46px;display:grid;place-items:center;border-radius:13px;color:#ff9d3c;
+  background:rgba(255,140,40,.13);border:1px solid rgba(255,140,40,.32);box-shadow:0 0 24px -8px rgba(255,140,40,.8)}
+.streak-strip .sv{font-family:'Chakra Petch',sans-serif;font-size:23px;font-weight:700;line-height:1.1}
+.streak-strip .sd{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-top:3px}
+.quick-list{display:grid;gap:10px}
+.quick-item{display:flex;align-items:center;gap:12px;padding:12px 13px;border-radius:13px;
+  border:1px solid var(--line);background:rgba(10,22,42,.45)}
+.quick-item .qi-ic{width:36px;height:36px;display:grid;place-items:center;border-radius:10px;flex:0 0 auto;
+  background:rgba(53,224,255,.11);color:var(--accent);border:1px solid rgba(53,224,255,.2)}
+.quick-item .qi-body{flex:1;min-width:0}
+.quick-item .qi-body b{display:block;font-family:'Chakra Petch',sans-serif;font-size:13px;letter-spacing:.07em;font-weight:600}
+.quick-item .qi-body .bar{margin-top:7px;height:6px}
+.quick-item .qi-xp{font-family:'Chakra Petch',sans-serif;font-size:12px;font-weight:700;color:var(--gold);white-space:nowrap}
+.sys-msg{position:relative;padding:16px 18px;border-left:2px solid var(--accent);
+  background:linear-gradient(100deg,rgba(53,224,255,.12),transparent 65%);border-radius:12px;font-size:11.5px;line-height:2;
+  letter-spacing:.06em;color:#bfe6ff}
+.sys-msg b{color:var(--accent);letter-spacing:.2em;font-size:10px;display:block;margin-bottom:5px}
+
+/* ============================= QUESTS ============================= */
+.control-row{display:flex;flex-wrap:wrap;gap:9px;align-items:center}
+.seg{display:inline-flex;padding:4px;gap:4px;border-radius:12px;background:rgba(8,18,36,.72);border:1px solid var(--line)}
+.seg button{padding:9px 13px;border-radius:9px;font-size:10px;letter-spacing:.16em;text-transform:uppercase;
+  font-weight:600;color:var(--muted);transition:all .22s}
+.seg button.active{background:linear-gradient(120deg,var(--accent),#4bb0ff);color:#02121f;box-shadow:0 6px 18px -8px rgba(53,224,255,.9)}
+.switch{display:inline-flex;align-items:center;gap:10px;padding:10px 14px;border-radius:12px;
+  border:1px solid var(--line);background:rgba(8,18,36,.72);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.switch .track{width:38px;height:21px;border-radius:20px;background:rgba(88,196,255,.16);position:relative;transition:background .25s;flex:0 0 auto}
+.switch .knob{position:absolute;top:2.5px;left:2.5px;width:16px;height:16px;border-radius:50%;background:var(--muted);transition:all .28s cubic-bezier(.22,1,.36,1)}
+.switch.on{color:var(--ok);border-color:rgba(77,255,184,.34)}
+.switch.on .track{background:rgba(77,255,184,.28)}
+.switch.on .knob{left:19.5px;background:var(--ok);box-shadow:0 0 12px var(--ok)}
+.directive{display:flex;gap:12px;align-items:flex-start;padding:15px 16px;border-radius:13px;
+  border:1px solid rgba(255,207,92,.26);background:linear-gradient(100deg,rgba(255,207,92,.1),transparent 70%)}
+.directive .ic{color:var(--gold);flex:0 0 auto;margin-top:1px}
+.directive p{font-size:11px;line-height:1.95;letter-spacing:.05em;color:#ffe6ad}
+.directive b{display:block;font-family:'Chakra Petch',sans-serif;font-size:10px;letter-spacing:.22em;color:var(--gold);margin-bottom:4px}
+.quest-card{position:relative;padding:17px 16px 15px;border-radius:15px;border:1px solid var(--line);
+  background:linear-gradient(158deg,rgba(21,44,78,.55),rgba(9,19,38,.55));transition:transform .3s,border-color .3s,opacity .3s}
+.quest-card:hover{transform:translateY(-2px);border-color:var(--line-strong)}
+.quest-card.done{opacity:.62}
+.quest-card.done .quest-title{color:var(--ok)}
+.q-top{display:flex;gap:12px;align-items:flex-start}
+.q-ic{width:42px;height:42px;flex:0 0 auto;display:grid;place-items:center;border-radius:12px;color:var(--accent);
+  background:rgba(53,224,255,.11);border:1px solid rgba(53,224,255,.22)}
+.quest-card.done .q-ic{color:var(--ok);background:rgba(77,255,184,.12);border-color:rgba(77,255,184,.3)}
+.q-info{flex:1;min-width:0}
+.q-tags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px}
+.quest-title{font-family:'Chakra Petch',sans-serif;font-size:15px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;line-height:1.3}
+.q-desc{margin-top:6px;font-size:10.8px;line-height:1.95;color:var(--muted);letter-spacing:.03em}
+.q-progress{margin-top:14px}
+.q-bar-label{display:flex;justify-content:space-between;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:7px}
+.q-actions{margin-top:14px;display:flex;gap:9px;flex-wrap:wrap}
+.q-actions .btn{flex:1;min-width:120px}
+.countdown{display:inline-flex;align-items:center;gap:9px;padding:11px 15px;border-radius:12px;
+  border:1px solid var(--line);background:rgba(8,18,36,.72);font-family:'Chakra Petch',sans-serif;
+  font-size:13px;letter-spacing:.14em;color:var(--accent)}
+.countdown .ic{color:var(--accent)}
+
+/* ============================= DUNGEONS ============================= */
+.dungeon-grid{display:grid;gap:15px}
+.dungeon-card{position:relative;padding:19px 18px;border-radius:17px;overflow:hidden;
+  border:1px solid var(--line);background:
+    linear-gradient(150deg,rgba(24,50,90,.62),rgba(8,18,38,.68));
+  transition:transform .35s cubic-bezier(.22,1,.36,1),border-color .3s,box-shadow .35s}
+.dungeon-card:hover{transform:translateY(-3px);border-color:var(--line-strong);box-shadow:0 22px 50px -26px rgba(53,224,255,.7)}
+.dungeon-card.locked{opacity:.55;filter:saturate(.5)}
+.dungeon-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:.55}
+.dungeon-card.boss{border-color:rgba(255,92,122,.35);background:linear-gradient(150deg,rgba(84,26,52,.55),rgba(12,16,38,.72))}
+.dungeon-card.boss::before{background:linear-gradient(90deg,transparent,var(--danger),transparent)}
+.d-head{display:flex;align-items:flex-start;gap:13px}
+.d-glyph{width:47px;height:47px;flex:0 0 auto;display:grid;place-items:center;border-radius:13px;
+  background:rgba(53,224,255,.12);border:1px solid rgba(53,224,255,.24);color:var(--accent)}
+.dungeon-card.boss .d-glyph{color:var(--danger);background:rgba(255,92,122,.12);border-color:rgba(255,92,122,.3)}
+.d-name{font-family:'Chakra Petch',sans-serif;font-size:16px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;line-height:1.3}
+.d-cat{margin-top:5px;display:flex;flex-wrap:wrap;gap:6px}
+.d-stars{color:var(--gold);letter-spacing:.28em;font-size:11px}
+.d-desc{margin-top:12px;font-size:10.8px;line-height:1.95;color:var(--muted);letter-spacing:.03em}
+.d-obj{margin-top:13px;display:grid;gap:7px}
+.d-obj-item{display:flex;align-items:center;gap:9px;font-size:10.5px;letter-spacing:.05em;color:#a9c7e2}
+.d-obj-item .ic{color:var(--accent);width:14px;height:14px}
+.d-foot{margin-top:15px;display:flex;align-items:center;gap:11px;flex-wrap:wrap}
+.d-foot .btn{flex:1;min-width:150px}
+.d-clears{font-size:9.5px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+
+/* ============================= STATUS ============================= */
+.rank-ladder{display:flex;gap:8px;flex-wrap:wrap}
+.rank-step{flex:1;min-width:52px;text-align:center;padding:13px 6px;border-radius:12px;
+  border:1px solid var(--line);background:rgba(10,22,42,.5);transition:all .3s}
+.rank-step .rs{font-family:'Chakra Petch',sans-serif;font-size:20px;font-weight:700;color:var(--muted)}
+.rank-step .rl{font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-top:5px}
+.rank-step.reached{border-color:rgba(53,224,255,.34);background:rgba(53,224,255,.08)}
+.rank-step.reached .rs{color:var(--accent)}
+.rank-step.current{border-color:rgba(255,207,92,.55);background:rgba(255,207,92,.12);transform:translateY(-3px);
+  box-shadow:0 14px 32px -16px rgba(255,207,92,.9)}
+.rank-step.current .rs{color:var(--gold)}
+.detail-rows{display:grid;gap:1px;background:var(--line);border-radius:13px;overflow:hidden;border:1px solid var(--line)}
+.detail-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:13px 15px;background:rgba(8,18,36,.82)}
+.detail-row span{font-size:9.5px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
+.detail-row b{font-family:'Chakra Petch',sans-serif;font-size:13.5px;letter-spacing:.08em;color:var(--text);text-align:right}
+.activity-log{display:grid;gap:8px;max-height:270px;overflow-y:auto;padding-right:4px}
+.act-item{display:flex;gap:10px;align-items:flex-start;padding:11px 13px;border-radius:11px;background:rgba(10,22,42,.5);
+  border:1px solid var(--line);font-size:10.5px;line-height:1.8;letter-spacing:.04em;color:#a9c7e2}
+.act-item .ic{color:var(--accent);width:15px;height:15px;margin-top:2px}
+.act-item time{display:block;font-size:8.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);margin-top:3px}
+
+/* ============================= ACHIEVEMENTS ============================= */
+.ach-grid{display:grid;gap:14px}
+.ach-card{position:relative;padding:18px 17px;border-radius:15px;overflow:hidden;
+  border:1px solid var(--line);background:linear-gradient(158deg,rgba(21,44,78,.5),rgba(9,19,38,.55));transition:all .35s}
+.ach-card.locked{opacity:.58;filter:grayscale(.55)}
+.ach-card.unlocked{border-color:rgba(255,207,92,.42);
+  background:linear-gradient(150deg,rgba(72,54,16,.5),rgba(20,22,44,.62))}
+.ach-card.unlocked::after{content:'';position:absolute;top:-40px;right:-40px;width:120px;height:120px;border-radius:50%;
+  background:radial-gradient(circle,rgba(255,207,92,.26),transparent 70%)}
+.ach-icon{width:50px;height:50px;display:grid;place-items:center;border-radius:14px;color:var(--muted);
+  background:rgba(124,156,189,.12);border:1px solid rgba(124,156,189,.26)}
+.ach-card.unlocked .ach-icon{color:var(--gold);background:rgba(255,207,92,.15);border-color:rgba(255,207,92,.4);
+  box-shadow:0 0 30px -10px rgba(255,207,92,.9)}
+.ach-name{margin-top:13px;font-family:'Chakra Petch',sans-serif;font-size:16px;font-weight:700;letter-spacing:.11em;text-transform:uppercase}
+.ach-card.unlocked .ach-name{color:var(--gold)}
+.ach-desc{margin-top:7px;font-size:10.6px;line-height:1.95;color:var(--muted);letter-spacing:.04em}
+.ach-prog{margin-top:13px}
+.ach-prog .q-bar-label{margin-bottom:7px}
+
+/* ============================= OVERLAYS ============================= */
+.overlay{position:fixed;inset:0;z-index:200;display:grid;place-items:center;padding:22px;
+  background:rgba(3,6,14,.82);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);
+  animation:ovIn .38s ease}
+@keyframes ovIn{from{opacity:0}to{opacity:1}}
+.overlay.out{animation:ovOut .32s ease forwards}
+@keyframes ovOut{to{opacity:0;visibility:hidden}}
+.lv-panel{position:relative;width:100%;max-width:430px;text-align:center;padding:38px 26px 30px;border-radius:22px;
+  border:1px solid rgba(53,224,255,.4);overflow:hidden;
+  background:linear-gradient(165deg,rgba(22,52,102,.85),rgba(8,16,36,.92));
+  box-shadow:0 0 90px -18px rgba(53,225,255,.7);animation:lvPop .55s cubic-bezier(.22,1,.36,1)}
+@keyframes lvPop{from{opacity:0;transform:scale(.86) translateY(26px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.lv-ring{position:absolute;left:50%;top:-92px;width:300px;height:300px;margin-left:-150px;border-radius:50%;
+  border:1px solid rgba(53,224,255,.3);animation:ringExpand 2.6s ease-out infinite}
+.lv-ring:nth-child(2){animation-delay:.85s}
+.lv-ring:nth-child(3){animation-delay:1.7s}
+@keyframes ringExpand{0%{transform:scale(.5);opacity:.9}100%{transform:scale(1.35);opacity:0}}
+.lv-title{position:relative;font-family:'Chakra Petch',sans-serif;font-size:clamp(26px,8vw,38px);font-weight:700;
+  letter-spacing:.34em;text-transform:uppercase;
+  background:linear-gradient(100deg,#fff,var(--accent) 45%,#7fb6ff);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  animation:glitchIn .8s steps(2) 1}
+@keyframes glitchIn{0%{transform:translateX(-6px);opacity:.2;filter:blur(4px)}25%{transform:translateX(5px)}50%{transform:translateX(-3px);filter:blur(0)}100%{transform:none;opacity:1}}
+.lv-num{position:relative;margin:18px auto 6px;width:118px;height:118px;display:grid;place-items:center;border-radius:50%;
+  border:2px solid var(--accent);color:var(--accent);font-family:'Chakra Petch',sans-serif;font-size:48px;font-weight:700;
+  background:radial-gradient(circle,rgba(53,224,255,.2),transparent 72%);box-shadow:0 0 46px -6px rgba(53,224,255,.8)}
+.lv-rank{position:relative;display:inline-flex;align-items:center;gap:9px;margin:12px 0 4px;padding:9px 18px;border-radius:12px;
+  background:rgba(255,207,92,.13);border:1px solid rgba(255,207,92,.42);color:var(--gold);
+  font-family:'Chakra Petch',sans-serif;font-size:15px;font-weight:700;letter-spacing:.22em}
+.lv-stats{position:relative;margin:20px 0 24px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.lv-stat{padding:11px 5px;border-radius:12px;background:rgba(8,20,42,.7);border:1px solid var(--line)}
+.lv-stat b{display:block;font-family:'Chakra Petch',sans-serif;font-size:17px;color:var(--accent)}
+.lv-stat span{display:block;font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+.dg-panel{width:100%;max-width:520px;max-height:88vh;overflow-y:auto;padding:24px 20px;border-radius:20px;
+  border:1px solid var(--line-strong);background:linear-gradient(165deg,rgba(18,40,80,.88),rgba(7,14,32,.94));
+  box-shadow:0 0 80px -20px rgba(53,225,255,.6);animation:lvPop .45s cubic-bezier(.22,1,.36,1)}
+.dg-head{display:flex;align-items:flex-start;gap:13px;margin-bottom:6px}
+.dg-obj{display:grid;gap:11px;margin:18px 0}
+.dg-obj-row{padding:14px;border-radius:13px;border:1px solid var(--line);background:rgba(9,20,42,.62)}
+.dg-obj-row.done{border-color:rgba(77,255,184,.42);background:rgba(77,255,184,.07)}
+.dg-obj-top{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.dg-obj-top b{flex:1;font-family:'Chakra Petch',sans-serif;font-size:13px;letter-spacing:.08em;text-transform:uppercase}
+.dg-actions{display:flex;gap:9px;flex-wrap:wrap}
+.dg-actions .btn{flex:1;min-width:120px}
+.clear-banner{position:relative;text-align:center;padding:26px 18px;border-radius:16px;margin:16px 0;
+  border:1px solid rgba(255,207,92,.42);background:radial-gradient(circle at 50% 0%,rgba(255,207,92,.16),transparent 70%)}
+.clear-banner h3{font-size:clamp(21px,6vw,28px);letter-spacing:.28em;text-transform:uppercase;color:var(--gold)}
+.reward-row{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:15px}
+
+/* ============================= TOASTS ============================= */
+#toasts{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:300;width:min(94vw,420px);
+  display:grid;gap:10px;pointer-events:none}
+.toast{position:relative;display:flex;gap:12px;align-items:flex-start;padding:14px 15px;border-radius:14px;
+  border:1px solid var(--line-strong);overflow:hidden;pointer-events:auto;
+  background:linear-gradient(120deg,rgba(14,32,64,.95),rgba(8,16,34,.96));
+  -webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);
+  box-shadow:0 20px 50px -18px rgba(0,0,0,.9);animation:toastIn .45s cubic-bezier(.22,1,.36,1)}
+@keyframes toastIn{from{opacity:0;transform:translateY(-18px) scale(.96)}to{opacity:1;transform:none}}
+.toast.out{animation:toastOut .32s ease forwards}
+@keyframes toastOut{to{opacity:0;transform:translateX(28px)}}
+.toast::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent)}
+.toast.level::before{background:var(--gold)}
+.toast.achievement::before{background:#c78bff}
+.toast.quest::before{background:var(--ok)}
+.toast .t-ic{width:34px;height:34px;flex:0 0 auto;display:grid;place-items:center;border-radius:10px;
+  background:rgba(53,224,255,.13);color:var(--accent)}
+.toast.level .t-ic{background:rgba(255,207,92,.14);color:var(--gold)}
+.toast.achievement .t-ic{background:rgba(199,139,255,.14);color:#c78bff}
+.toast.quest .t-ic{background:rgba(77,255,184,.13);color:var(--ok)}
+.toast .t-body{flex:1;min-width:0}
+.toast .t-sys{font-size:8px;letter-spacing:.32em;text-transform:uppercase;color:var(--muted)}
+.toast .t-title{margin-top:3px;font-family:'Chakra Petch',sans-serif;font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.toast .t-msg{margin-top:3px;font-size:10.5px;line-height:1.75;color:#a9c7e2;letter-spacing:.03em}
+
+/* ============================= BOOT ============================= */
+#boot{position:fixed;inset:0;z-index:400;display:grid;place-items:center;background:#04070e}
+#boot .boot-inner{text-align:center;width:min(86vw,320px)}
+#boot .boot-label{font-family:'Chakra Petch',sans-serif;font-size:11px;letter-spacing:.42em;text-transform:uppercase;color:var(--accent)}
+#boot .boot-bar{margin-top:16px;height:3px;border-radius:8px;background:rgba(53,224,255,.16);overflow:hidden}
+#boot .boot-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent-2),var(--accent));
+  box-shadow:0 0 14px var(--accent);animation:bootFill 1.15s cubic-bezier(.5,0,.2,1) forwards}
+@keyframes bootFill{to{width:100%}}
+#boot.done{animation:ovOut .5s ease forwards}
+
+/* ============================= RESPONSIVE ============================= */
+@media(min-width:640px){
+  .stat-grid{grid-template-columns:repeat(4,1fr)}
+  .quest-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .ach-grid{grid-template-columns:1fr 1fr}
+}
+@media(min-width:980px){
+  .app-main{padding:10px 34px 46px 128px;max-width:1280px}
+  .main-nav{top:0;bottom:auto;right:auto;width:106px;height:100vh;grid-template-columns:1fr;grid-auto-rows:min-content;
+    gap:10px;padding:96px 11px 20px;border-top:0;border-right:1px solid var(--line);align-content:start;
+    background:linear-gradient(180deg,rgba(6,12,26,.96),rgba(5,10,22,.96))}
+  .nav-item{padding:15px 4px 12px}
+  .nav-item span{font-size:8.2px}
+  .nav-item .nav-glow{top:50%;left:2px;transform:translateY(-50%);width:2.5px;height:24px}
+  .nav-item.active{transform:translateX(3px)}
+  .sysbar{padding:20px 34px 16px 128px}
+  .dungeon-grid{grid-template-columns:1fr 1fr}
+  .hunter-card{padding:28px}
+  .two-col{display:grid;grid-template-columns:1.25fr 1fr;gap:16px;align-items:start}
+  .stat-card .sc-val{font-size:30px}
+}
+</style>
+</head>
+<body>
+
+<div class="bg-fx"></div>
+<div class="bg-grid"></div>
+<div class="bg-orb orb-a"></div>
+<div class="bg-orb orb-b"></div>
+<div class="scanlines"></div>
+
+<!-- ============================ BOOT ============================ -->
+<div id="boot"><div class="boot-inner">
+  <div class="boot-label">System Initializing</div>
+  <div class="boot-bar"><i></i></div>
+</div></div>
+
+<!-- ============================ AUTH ============================ -->
+<div id="auth-screen" class="hidden">
+  <div class="auth-wrap">
+    <div class="auth-hero">
+      <div class="glyph" id="auth-glyph"></div>
+      <h1>Shadow System</h1>
+      <p>Real-Life Hunter Progression Protocol</p>
+    </div>
+    <div class="panel flat" style="padding:22px 20px">
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-action="auth-tab" data-tab="login">Login</button>
+        <button class="auth-tab" data-action="auth-tab" data-tab="signup">Sign Up</button>
+      </div>
+
+      <form id="login-form" autocomplete="on">
+        <div class="field"><label>Email</label><input type="email" name="email" required placeholder="hunter@system.io"></div>
+        <div class="field"><label>Password</label><input type="password" name="password" required minlength="6" placeholder="••••••••"></div>
+        <div class="form-msg" id="login-msg"></div>
+        <button class="btn primary block" type="submit">Enter The System</button>
+      </form>
+
+      <form id="signup-form" class="hidden" autocomplete="on">
+        <div class="field"><label>Hunter Name</label><input type="text" name="name" required maxlength="22" placeholder="Your callsign"></div>
+        <div class="field"><label>Email</label><input type="email" name="email" required placeholder="hunter@system.io"></div>
+        <div class="field"><label>Password</label><input type="password" name="password" required minlength="6" placeholder="min. 6 characters"></div>
+        <div class="form-msg" id="signup-msg"></div>
+        <button class="btn primary block" type="submit">Awaken</button>
+      </form>
+
+      <div style="margin-top:16px">
+        <button class="btn ghost block" data-action="guest">Continue As Guest (Local)</button>
+      </div>
+      <div class="auth-foot">
+        <div class="cloud-pill" id="cloud-pill"><span class="dot-live" style="background:var(--muted);box-shadow:none"></span><span id="cloud-pill-text">Checking cloud link…</span></div>
+        <p style="margin-top:12px">Progress is saved automatically. If the cloud link is<br>unavailable, all data is stored locally on this device.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================ APP ============================ -->
+<div id="app" class="hidden">
+  <header class="sysbar">
+    <div class="brand">
+      <div class="brand-mark" id="brand-mark"></div>
+      <div class="brand-text">
+        <b>Shadow System</b>
+        <span><i class="dot-live"></i> System Online</span>
+      </div>
+    </div>
+    <div class="sysbar-right">
+      <div class="rank-chip" id="rank-chip"></div>
+      <button class="icon-btn" data-action="logout" title="Log out" id="logout-btn"></button>
+    </div>
+  </header>
+
+  <main class="app-main">
+    <section class="view" id="view-dashboard"></section>
+    <section class="view" id="view-quests"></section>
+    <section class="view" id="view-dungeons"></section>
+    <section class="view" id="view-status"></section>
+    <section class="view" id="view-achievements"></section>
+  </main>
+
+  <nav class="main-nav" id="main-nav"></nav>
+</div>
+
+<div id="toasts"></div>
+<div id="overlay-root"></div>
+
+<script>
+/* =============================================================
+   SHADOW SYSTEM — application core
+   -------------------------------------------------------------
+   SUPABASE SETUP (optional — app falls back to local storage):
+   1. Create a Supabase project and paste URL + anon key below.
+   2. Run this SQL in the SQL editor:
+
+   create table if not exists player_progress (
+     user_id uuid primary key references auth.users(id) on delete cascade,
+     data jsonb,
+     updated_at timestamptz default now()
+   );
+   alter table player_progress enable row level security;
+   create policy "own_progress" on player_progress
+     for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+   3. (Optional) disable "Confirm email" in Auth settings for instant login.
+   ============================================================= */
+const SUPABASE_URL = '';      // e.g. 'https://xxxxxxxx.supabase.co'
+const SUPABASE_ANON_KEY = ''; // your anon/public key
+
+/* ============================ ICONS ============================ */
+const ICONS = {
+  grid:'<rect x="3" y="3" width="7.5" height="7.5" rx="1.6"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.6"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.6"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.6"/>',
+  scroll:'<path d="M6 3h12v18H6z"/><path d="M9 8h6M9 12h6M9 16h3.5"/>',
+  fort:'<path d="M3 21V9.5L12 3l9 6.5V21"/><path d="M9 21v-6.5h6V21"/><path d="M3 21h18"/>',
+  user:'<circle cx="12" cy="8" r="3.8"/><path d="M4.5 20.5c0-3.9 3.4-6.2 7.5-6.2s7.5 2.3 7.5 6.2"/>',
+  trophy:'<path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 5H5v1.6A3.2 3.2 0 0 0 8.2 9.8M16 5h3v1.6a3.2 3.2 0 0 1-3.2 3.2"/><path d="M10 13v3.2h4V13"/><path d="M8 20.5h8"/><path d="M12 16.2v4.3"/>',
+  sword:'<path d="M14.5 3.5 20.5 9.5 12 18l-2.6-2.6z"/><path d="M4 20l4.2-4.2"/><path d="M6.6 12.8 11.2 17.4"/>',
+  shield:'<path d="M12 3l8 3v5.6c0 5-3.4 8.2-8 9.4-4.6-1.2-8-4.4-8-9.4V6z"/><path d="M9 12l2 2 4-4"/>',
+  wind:'<path d="M3 8h10a3 3 0 1 0-3-3"/><path d="M3 12h14a3 3 0 1 1-3 3"/><path d="M3 16h7"/>',
+  heart:'<path d="M12 20.5S4.5 15.6 4.5 10.2A4.2 4.2 0 0 1 12 7.5a4.2 4.2 0 0 1 7.5 2.7c0 5.4-7.5 10.3-7.5 10.3z"/>',
+  flame:'<path d="M12 3s5.2 3.9 5.2 8.3A5.2 5.2 0 0 1 6.8 11.3c0-1.9 1-3.4 2-4.8.6 1.5 1.5 2.1 2.1 2.1.1-2.1 1.1-4.1 1.1-5.6z"/>',
+  drop:'<path d="M12 3s6.2 6.6 6.2 10.2A6.2 6.2 0 1 1 5.8 13.2C5.8 9.6 12 3 12 3z"/>',
+  check:'<path d="M4.5 12.5l5 5L20 6.5"/>',
+  lock:'<rect x="5" y="11" width="14" height="9.5" rx="2.2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+  bolt:'<path d="M13.2 2.5 5.5 13.5h5.6L10.2 21.5 18.5 10.5h-5.6z"/>',
+  crown:'<path d="M12 3.2 14.7 9l6.3.9-4.6 4.3 1.2 6.1-5.6-3-5.6 3 1.2-6.1L3 9.9 9.3 9z"/>',
+  clock:'<circle cx="12" cy="12" r="8.8"/><path d="M12 6.8V12l3.2 2"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  logout:'<path d="M9.5 4H5v16h4.5"/><path d="M16 8l4 4-4 4"/><path d="M20 12H9.5"/>',
+  skull:'<path d="M12 3a8 8 0 0 0-5 14.2V21h10v-3.8A8 8 0 0 0 12 3z"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><path d="M11 16.5h2"/>',
+  info:'<circle cx="12" cy="12" r="8.8"/><path d="M12 11v5"/><path d="M12 7.6v.1"/>',
+  refresh:'<path d="M20 12a8 8 0 1 1-2.6-5.9"/><path d="M20 3.5V8h-4.5"/>',
+  target:'<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.8"/><circle cx="12" cy="12" r="1.2"/>',
+  moon:'<path d="M20 13.5A8.2 8.2 0 0 1 10.5 4 8.4 8.4 0 1 0 20 13.5z"/>',
+  save:'<path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4"/><rect x="8" y="13" width="8" height="7"/>',
+  star:'<path d="M12 3.4 14.6 9l6.2.8-4.5 4.2 1.1 6-5.4-2.9-5.4 2.9 1.1-6L3.2 9.8 9.4 9z"/>'
+};
+function icon(name, cls){ return '<svg class="ic '+(cls||'')+'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">'+(ICONS[name]||ICONS.info)+'</svg>'; }
+const esc = s => String(s??'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ============================ HELPERS ============================ */
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+function todayKey(){ return new Date().toLocaleDateString('en-CA'); }
+function yesterdayKey(){ return new Date(Date.now()-864e5).toLocaleDateString('en-CA'); }
+function fmtDate(iso){ try{ return new Date(iso).toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'}); }catch(e){ return '—'; } }
+function fmtTime(iso){ try{ return new Date(iso).toLocaleString(undefined,{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'}); }catch(e){ return ''; } }
+
+/* ============================ CLOUD (SUPABASE) ============================ */
+let sb = null, cloudActive = false, cloudWarned = false;
+async function initCloud(){
+  if(!SUPABASE_URL || !SUPABASE_ANON_KEY || !window.supabase || !window.supabase.createClient) return;
+  try{ sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); cloudActive = true; }
+  catch(e){ sb = null; cloudActive = false; }
+}
+function cloudStatusText(){ return cloudActive ? 'Cloud Link: Active' : 'Local Archive Mode'; }
+
+/* ============================ STATE ============================ */
+const LS_STATE = id => 'shadow_system_state::'+id;
+function defaultState(name){
+  return {
+    version:1,
+    profile:{ name:name||'Hunter', level:1, xp:0, totalXp:0,
+      stats:{str:10, end:10, agi:10, vit:10},
+      streak:0, bestStreak:0, lastStreakDate:null,
+      experience:'beginner', restDay:false,
+      joinedAt:new Date().toISOString(),
+      questsCompleted:0, dungeonsCleared:0 },
+    quests:{ date:todayKey(), items:{} },
+    dungeons:{}, achievements:{}, unlocksNotified:[], log:[]
+  };
+}
+function deepMerge(base, saved){
+  if(saved===null||saved===undefined) return base;
+  if(typeof base!=='object'||Array.isArray(base)) return saved;
+  if(typeof saved!=='object'||Array.isArray(saved)) return base;
+  const out = Object.assign({}, base);
+  for(const k in saved){
+    const bv = base[k], sv = saved[k];
+    out[k] = (bv && typeof bv==='object' && !Array.isArray(bv) && sv && typeof sv==='object' && !Array.isArray(sv))
+      ? deepMerge(bv, sv) : sv;
+  }
+  return out;
+}
+let state = defaultState('Hunter');
+let currentUserId = 'guest';
+let currentView = 'dashboard';
+
+function saveLocal(){
+  try{ localStorage.setItem(LS_STATE(currentUserId), JSON.stringify(state)); }catch(e){}
+}
+let cloudTimer = null;
+function scheduleCloudSave(){
+  saveLocal();
+  if(!cloudActive || !sb || currentUserId==='guest' || !sessionAuth) return;
+  clearTimeout(cloudTimer);
+  cloudTimer = setTimeout(async () => {
+    try{
+      await sb.from('player_progress').upsert(
+        { user_id: sessionAuth.id, data: state, updated_at: new Date().toISOString() },
+        { onConflict: 'user_id' }
+      );
+    }catch(e){
+      if(!cloudWarned){ cloudWarned = true; notify('info','Cloud Sync Paused','Local archive remains active — your progress is safe on this device.'); }
+    }
+  }, 900);
+}
+function persist(){ scheduleCloudSave(); }
+
+function loadLocal(id){
+  try{
+    const raw = localStorage.getItem(LS_STATE(id));
+    if(raw) return deepMerge(defaultState('Hunter'), JSON.parse(raw));
+  }catch(e){}
+  return null;
+}
+
+/* ============================ XP / LEVEL / RANK ============================ */
+const RANKS = [
+  {r:'E', min:1}, {r:'D', min:10}, {r:'C', min:20},
+  {r:'B', min:30}, {r:'A', min:40}, {r:'S', min:50}
+];
+function rankOf(level){ let cur = RANKS[0].r; for(const R of RANKS){ if(level >= R.min) cur = R.r; } return cur; }
+function nextRankInfo(level){
+  for(const R of RANKS){ if(level < R.min) return R; }
+  return null;
+}
+function xpToNext(level){ return 100 + (level - 1) * 75; }
+
+function addXp(amount, reason){
+  const p = state.profile;
+  const before = { level: p.level, rank: rankOf(p.level) };
+  p.xp += amount; p.totalXp += amount;
+  let gained = 0;
+  while(p.xp >= xpToNext(p.level)){
+    p.xp -= xpToNext(p.level);
+    p.level += 1; gained += 1;
+    p.stats.str += 2; p.stats.end += 2; p.stats.agi += 2; p.stats.vit += 2;
+    logEvent('Reached Level '+p.level+(reason? ' — '+reason : ''), 'bolt');
+  }
+  if(gained > 0){
+    const after = { level: p.level, rank: rankOf(p.level) };
+    showLevelUp(before, after);
+    if(after.rank !== before.rank){
+      notify('level','Rank Up','You have been re-evaluated as '+after.rank+'-Rank Hunter.');
+    }
+    checkUnlocks();
+  }
+  checkAchievements();
+  persist();
+  renderAll();
+  return gained;
+}
+
+/* ============================ LOG & NOTIFICATIONS ============================ */
+function logEvent(text, ic){
+  state.log.unshift({ t:new Date().toISOString(), text, ic: ic||'info' });
+  if(state.log.length > 40) state.log.length = 40;
+}
+function notify(type, title, msg){
+  const wrap = ('#toasts'); if(!wrap) return;
+  const map = { quest:'check', level:'bolt', achievement:'trophy', info:'info' };
+  const el = document.createElement('div');
+  el.className = 'toast '+(type||'info');
+  el.innerHTML =
+    '<div class="t-ic">'+icon(map[type]||'info')+'</div>'+
+    '<div class="t-body"><div class="t-sys">[ System ]</div>'+
+    '<div class="t-title">'+esc(title)+'</div>'+
+    '<div class="t-msg">'+esc(msg)+'</div></div>';
+  wrap.appendChild(el);
+  while(wrap.children.length > 4) wrap.removeChild(wrap.firstChild);
+  setTimeout(()=>{ el.classList.add('out'); setTimeout(()=>el.remove(), 340); }, 5200);
+}
+
+/* ============================ QUESTS ============================ */
+function questDefs(){
+  const exp = state.profile.experience;
+  const m = { beginner:0.65, intermediate:1, advanced:1.35 }[exp] || 1;
+  const lvl = state.profile.level;
+  const base = [
+    { id:'stretch', name:'Dynamic Stretching', cat:'Stretching', icon:'wind',
+      desc:'Full-body mobility flow — neck, shoulders, hips and hamstrings. Move gently, never bounce into a stretch.',
+      unit:'rounds', target:Math.max(2, Math.round(3*m)), step:1, xp:40, stat:'agi' },
+    { id:'push', name:'Push-Up Protocol', cat:'Strength', icon:'sword', strength:true,
+      desc:'Chest, shoulders and triceps. Scale freely: wall or incline push-ups are valid. Stop at once if you feel sharp pain.',
+      unit:'reps', target:Math.max(6, Math.round((12 + lvl*1.5)*m)), step:5, xp:60, stat:'str' },
+    { id:'squat', name:'Squat Training', cat:'Strength', icon:'bolt', strength:true,
+      desc:'Quads, glutes and core. Reduce depth or hold a chair for balance if you are new to training.',
+      unit:'reps', target:Math.max(10, Math.round((18 + lvl*2)*m)), step:5, xp:55, stat:'str' },
+    { id:'walk', name:"Hunter's March", cat:'Endurance', icon:'shield',
+      desc:'Steady walking, outdoors or on a treadmill. Aim for a pace where you can still hold a conversation.',
+      unit:'minutes', target:Math.max(10, Math.round(20*m)), step:5, xp:50, stat:'end' },
+    { id:'water', name:'Mana Potion Intake', cat:'Hydration', icon:'drop',
+      desc:'Drink water steadily across the day. Keep a bottle within reach and sip regularly.',
+      unit:'glasses', target:8, step:1, xp:30, stat:'vit' },
+    { id:'rest', name:'Recovery Cycle', cat:'Recovery', icon:'heart',
+      desc:'Log a full recovery block: 7–8 hours of sleep, light stretching or a relaxed walk. Growth happens during recovery.',
+      unit:'cycles', target:1, step:1, xp:25, stat:'vit' }
+  ];
+  if(state.profile.restDay){
+    return base.filter(q => !q.strength).concat([{
+      id:'active_recovery', name:'Active Recovery Protocol', cat:'Recovery', icon:'moon',
+      desc:'Rest day: gentle movement only — easy mobility or complete rest. Muscles and joints rebuild on rest days.',
+      unit:'minutes', target:10, step:5, xp:35, stat:'vit'
+    }]);
+  }
+  return base;
+}
+function questItem(id){
+  if(!state.quests.items[id]) state.quests.items[id] = { progress:0, done:false };
+  return state.quests.items[id];
+}
+function logQuestProgress(id, delta){
+  const def = questDefs().find(q => q.id === id); if(!def) return;
+  const it = questItem(id);
+  if(it.done){ notify('info','Quest Already Complete','This quest has already been claimed today.'); return; }
+  it.progress = Math.min(def.target, it.progress + Math.max(0, delta||def.step));
+  logEvent('Progress logged: '+def.name+' ('+it.progress+'/'+def.target+' '+def.unit+')', def.icon);
+  persist(); renderAll();
+}
+function completeQuest(id){
+  const def = questDefs().find(q => q.id === id); if(!def) return;
+  const it = questItem(id);
+  if(it.done) return;
+  it.done = true; it.progress = def.target;
+  state.profile.questsCompleted += 1;
+  state.profile.stats[def.stat] += 1;
+  updateStreak();
+  logEvent('Quest completed: '+def.name+' (+'+def.xp+' XP)', 'check');
+  notify('quest','Quest Completed', def.name+' — +'+def.xp+' XP · +1 '+def.stat.toUpperCase());
+  addXp(def.xp, def.name);
+}
+function updateStreak(){
+  const p = state.profile, t = todayKey();
+  if(p.lastStreakDate === t) return;
+  p.streak = (p.lastStreakDate === yesterdayKey()) ? p.streak + 1 : 1;
+  p.lastStreakDate = t;
+  p.bestStreak = Math.max(p.bestStreak || 0, p.streak);
+}
+function rollDaily(){
+  const t = todayKey();
+  if(state.quests.date === t) return;
+  const p = state.profile;
+  if(p.lastStreakDate && p.lastStreakDate !== t && p.lastStreakDate !== yesterdayKey()){
+    if(p.streak > 0) logEvent('Streak reset after inactivity', 'flame');
+    p.streak = 0;
+  }
+  state.quests = { date:t, items:{} };
+  notify('info','New Daily Quests Available','Your daily quest log has been reset. Consistency is the path, Hunter.');
+  persist(); renderAll();
+}
+
+/* ============================ DUNGEONS ============================ */
+function dungeonDefs(){
+  const exp = state.profile.experience;
+  const m = { beginner:0.7, intermediate:1, advanced:1.28 }[exp] || 1;
+  return [
+    { id:'d_temple', name:'Temple of Awakening', cat:'Beginner Dungeon', reqLevel:1, diff:1, xp:160, stat:'str',
+      icon:'fort',
+      desc:'A trial built for new hunters. Bodyweight fundamentals only — technique first, speed never.',
+      objectives:[
+        { name:'Bodyweight Squats', target:Math.round(25*m), unit:'reps', step:5 },
+        { name:'Incline Push-Ups', target:Math.round(15*m), unit:'reps', step:5 },
+        { name:'Forearm Plank', target:3, unit:'minutes', step:1 },
+        { name:'Stretching Cooldown', target:5, unit:'minutes', step:5 }
+      ]},
+    { id:'d_iron', name:'The Iron Citadel', cat:'Strength Dungeon', reqLevel:5, diff:2, xp:280, stat:'str',
+      icon:'sword',
+      desc:'Higher-volume strength circuit. Rest 60–90 seconds between sets and keep your breathing controlled.',
+      objectives:[
+        { name:'Push-Ups', target:Math.round(40*m), unit:'reps', step:10 },
+        { name:'Squats', target:Math.round(60*m), unit:'reps', step:10 },
+        { name:'Glute Bridges', target:Math.round(30*m), unit:'reps', step:10 },
+        { name:'Plank Hold', target:5, unit:'minutes', step:1 }
+      ]},
+    { id:'d_endless', name:'Corridor of the Endless', cat:'Endurance Dungeon', reqLevel:8, diff:3, xp:380, stat:'end',
+      icon:'shield',
+      desc:'Sustained effort over raw power. Choose a pace you can hold from the first minute to the last.',
+      objectives:[
+        { name:'Brisk Walk or Jog', target:Math.round(35*m), unit:'minutes', step:5 },
+        { name:'Jumping Jacks', target:Math.round(50*m), unit:'reps', step:10 },
+        { name:'Step-Ups / Stair Climbs', target:Math.round(20*m), unit:'minutes', step:5 }
+      ]},
+    { id:'d_shadow', name:'Shadow Trial Grounds', cat:'Agility Dungeon', reqLevel:12, diff:4, xp:520, stat:'agi',
+      icon:'wind',
+      desc:'Coordination, balance and footwork. Quality of movement beats raw speed — control every landing.',
+      objectives:[
+        { name:'High Knees', target:Math.round(60*m), unit:'reps', step:10 },
+        { name:'Lateral Shuffles', target:Math.round(30*m), unit:'reps', step:10 },
+        { name:'Line Hops / Ladder Steps', target:Math.round(40*m), unit:'reps', step:10 },
+        { name:'Single-Leg Balance Holds', target:4, unit:'minutes', step:1 }
+      ]},
+    { id:'d_boss', name:'Boss: The Frost Monarch', cat:'Boss Challenge', reqLevel:15, diff:5, xp:900, stat:'vit', boss:true,
+      icon:'skull',
+      desc:'The final gate. A full-body gauntlet — pace yourself, hydrate between phases and stop if form breaks down.',
+      objectives:[
+        { name:'Push-Ups', target:Math.round(60*m), unit:'reps', step:10 },
+        { name:'Squats', target:Math.round(100*m), unit:'reps', step:10 },
+        { name:'Mountain Climbers', target:Math.round(80*m), unit:'reps', step:10 },
+        { name:'Plank Hold', target:6, unit:'minutes', step:1 },
+        { name:'Cooldown Walk', target:10, unit:'minutes', step:5 }
+      ]}
+  ];
+}
+function dungeonRec(id){
+  if(!state.dungeons[id]) state.dungeons[id] = { clears:0, progress:{}, inProgress:false };
+  return state.dungeons[id];
+}
+function enterDungeon(id){
+  const d = dungeonDefs().find(x => x.id === id); if(!d) return;
+  if(state.profile.level < d.reqLevel){
+    notify('info','Dungeon Locked','Reach Level '+d.reqLevel+' to enter '+d.name+'.');
+    return;
+  }
+  const rec = dungeonRec(id);
+  rec.inProgress = true;
+  d.objectives.forEach((o,i) => { if(rec.progress[i] === undefined) rec.progress[i] = 0; });
+  persist();
+  openDungeonOverlay(id);
+}
+function logDungeonObjective(id, idx, delta){
+  const d = dungeonDefs().find(x => x.id === id); if(!d) return;
+  const rec = dungeonRec(id), o = d.objectives[idx]; if(!o) return;
+  rec.progress[idx] = Math.min(o.target, (rec.progress[idx]||0) + (delta||o.step));
+  persist();
+  renderDungeonOverlay(id);
+  if(d.objectives.every((ob,i) => (rec.progress[i]||0) >= ob.target)) clearDungeon(id);
+}
+function clearDungeon(id){
+  const d = dungeonDefs().find(x => x.id === id); if(!d) return;
+  const rec = dungeonRec(id);
+  if(!rec.inProgress) return;
+  rec.inProgress = false; rec.progress = {};
+  rec.clears += 1;
+  rec.firstClearedAt = rec.firstClearedAt || new Date().toISOString();
+  state.profile.dungeonsCleared += 1;
+  const replay = rec.clears > 1;
+  const reward = replay ? Math.round(d.xp * 0.3) : d.xp;
+  state.profile.stats[d.stat] += replay ? 1 : 3;
+  logEvent('Dungeon cleared: '+d.name+' (+'+reward+' XP)', d.icon);
+  persist();
+  renderDungeonOverlay(id, true, reward);
+  addXp(reward, d.name);
+  notify('quest','Dungeon Cleared', d.name+' — +'+reward+' XP · +'+(replay?1:3)+' '+d.stat.toUpperCase());
+}
+function checkUnlocks(){
+  dungeonDefs().forEach(d => {
+    if(state.profile.level >= d.reqLevel && !state.unlocksNotified.includes(d.id)){
+      state.unlocksNotified.push(d.id);
+      if(state.unlocksNotified.length > 1 || state.profile.level > 1){
+        notify('info','New Challenge Unlocked', d.name+' is now available.');
+        logEvent('Unlocked: '+d.name, 'lock');
+      }
+    }
+  });
+  persist();
+}
+
+/* ============================ ACHIEVEMENTS ============================ */
+const ACHIEVEMENTS = [
+  { id:'awakening', name:'New Awakening', icon:'bolt', desc:'Reach Level 5 and feel the system answer your call.',
+    hint:'Reach Level 5', prog: s => [s.profile.level, 5], check: s => s.profile.level >= 5 },
+  { id:'iron_will', name:'Iron Will', icon:'shield', desc:'Complete quests three days in a row without breaking formation.',
+    hint:'3-day streak', prog: s => [s.profile.streak, 3], check: s => s.profile.streak >= 3 },
+  { id:'consistent', name:'Consistent Hunter', icon:'flame', desc:'Hold a seven-day streak. Consistency outlasts intensity.',
+    hint:'7-day streak', prog: s => [s.profile.streak, 7], check: s => s.profile.streak >= 7 },
+  { id:'rising', name:'Rising Hunter', icon:'crown', desc:'Reach Level 15 and stand above the awakened masses.',
+    hint:'Reach Level 15', prog: s => [s.profile.level, 15], check: s => s.profile.level >= 15 },
+  { id:'monarch', name:'Shadow Monarch', icon:'star', desc:'Reach Level 30. The strongest shadow answers only to you.',
+    hint:'Reach Level 30', prog: s => [s.profile.level, 30], check: s => s.profile.level >= 30 }
+];
+function checkAchievements(){
+  ACHIEVEMENTS.forEach(a => {
+    if(!state.achievements[a.id] && a.check(state)){
+      state.achievements[a.id] = new Date().toISOString();
+      logEvent('Achievement unlocked: '+a.name, 'trophy');
+      notify('achievement','Achievement Unlocked', a.name+' — title acquired.');
+      persist();
+    }
+  });
+}
+
+/* ============================ OVERLAYS ============================ */
+function closeOverlay(){
+  const root = $('#overlay-root');
+  const ov = root.firstElementChild;
+  if(!ov) return;
+  ov.classList.add('out');
+  setTimeout(() => { root.innerHTML = ''; }, 320);
+}
+function showLevelUp(before, after){
+  const root = $('#overlay-root');
+  const rankUp = after.rank !== before.rank;
+  root.innerHTML =
+  '<div class="overlay" data-action="noop">'+
+    '<div class="lv-panel">'+
+      '<div class="lv-ring"></div><div class="lv-ring"></div><div class="lv-ring"></div>'+
+      '<div class="lv-title">Level Up</div>'+
+      '<div class="lv-num">'+after.level+'</div>'+
+      (rankUp
+        ? '<div class="lv-rank">'+icon('crown')+' '+after.rank+'-Rank Hunter</div>'
+        : '<div class="lv-rank" style="background:rgba(53,224,255,.12);border-color:rgba(53,224,255,.4);color:var(--accent)">'+icon('bolt')+' '+after.rank+'-Rank</div>')+
+      '<div class="lv-stats">'+
+        '<div class="lv-stat"><b>+2</b><span>Strength</span></div>'+
+        '<div class="lv-stat"><b>+2</b><span>Endurance</span></div>'+
+        '<div class="lv-stat"><b>+2</b><span>Agility</span></div>'+
+        '<div class="lv-stat"><b>+2</b><span>Vitality</span></div>'+
+      '</div>'+
+      '<p class="muted" style="font-size:11px;letter-spacing:.14em;margin-bottom:20px">'+
+        'Your body is adapting. New challenges await.</p>'+
+      '<button class="btn primary block" data-action="close-overlay">Continue</button>'+
+    '</div>'+
+  '</div>';
+}
+let openDungeonId = null;
+function openDungeonOverlay(id){
+  openDungeonId = id;
+  renderDungeonOverlay(id);
+}
+function renderDungeonOverlay(id, cleared, reward){
+  const root = $('#overlay-root');
+  const d = dungeonDefs().find(x => x.id === id); if(!d) return;
+  const rec = dungeonRec(id);
+  const stars = '★'.repeat(d.diff) + '☆'.repeat(5 - d.diff);
+  const objectivesHtml = d.objectives.map((o,i) => {
+    const val = rec.progress[i] || 0;
+    const pct = Math.min(100, Math.round(val / o.target * 100));
+    const done = val >= o.target;
+    return '<div class="dg-obj-row'+(done?' done':'')+'">'+
+      '<div class="dg-obj-top"><b>'+esc(o.name)+'</b>'+
+        (done ? '<span class="tag ok">'+icon('check','ic-sm')+' Done</span>' : '<span class="tag plain">'+val+' / '+o.target+' '+esc(o.unit)+'</span>')+
+      '</div>'+
+      '<div class="bar"><div class="fill" style="width:'+pct+'%"></div></div>'+
+      '<div class="dg-actions" style="margin-top:11px">'+
+        '<button class="btn ghost sm" data-action="dungeon-log" data-id="'+id+'" data-idx="'+i+'" data-delta="'+o.step+'"'+(done?' disabled':'')+'>'+icon('plus','ic-sm')+' '+o.step+' '+esc(o.unit)+'</button>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+
+  if(cleared){
+    root.innerHTML =
+    '<div class="overlay" data-action="noop"><div class="dg-panel">'+
+      '<div class="clear-banner">'+
+        '<h3>Dungeon Cleared</h3>'+
+        '<div class="reward-row">'+
+          '<span class="tag xp">'+icon('bolt','ic-sm')+' +'+reward+' XP</span>'+
+          '<span class="tag ok">'+icon('star','ic-sm')+' +'+(rec.clears>1?1:3)+' '+d.stat.toUpperCase()+'</span>'+
+          '<span class="tag plain">Clears: '+rec.clears+'</span>'+
+        '</div>'+
+      '</div>'+
+      '<p class="muted" style="font-size:11px;line-height:2;letter-spacing:.05em;text-align:center">'+
+        esc(d.name)+' has been conquered. Log your recovery — hydration and rest are part of the protocol.</p>'+
+      '<div style="margin-top:20px"><button class="btn primary block" data-action="close-overlay">Return</button></div>'+
+    '</div></div>';
+    return;
+  }
+
+  root.innerHTML =
+  '<div class="overlay" data-action="noop"><div class="dg-panel">'+
+    '<div class="dg-head">'+
+      '<div class="d-glyph">'+icon(d.icon,'ic-lg')+'</div>'+
+      '<div style="flex:1;min-width:0">'+
+        '<div class="d-name">'+esc(d.name)+'</div>'+
+        '<div class="d-cat"><span class="tag">'+esc(d.cat)+'</span><span class="tag xp">+'+d.xp+' XP</span><span class="d-stars">'+stars+'</span></div>'+
+      '</div>'+
+    '</div>'+
+    '<p class="muted" style="font-size:10.8px;line-height:1.95;letter-spacing:.04em">'+esc(d.desc)+'</p>'+
+    '<div class="directive" style="margin-top:14px">'+icon('info')+'<div><b>System Directive</b>'+
+      '<p>Work at your own level. Sharp or persistent pain means stop immediately — no reward is worth an injury.</p></div></div>'+
+    '<div class="dg-obj">'+objectivesHtml+'</div>'+
+    '<div class="dg-actions">'+
+      '<button class="btn ghost" data-action="close-overlay">Leave Dungeon</button>'+
+    '</div>'+
+  '</div></div>';
+}
+
+/* ============================ RENDER: SHARED ============================ */
+function statBar(v){ return Math.min(100, Math.round((v % 10) / 10 * 100) || (v >= 10 ? 20 : 10)); }
+function renderHeader(){
+  $('#rank-chip').innerHTML = icon('crown','ic-sm')+' '+rankOf(state.profile.level)+'-Rank <span class="lvl">Lv '+state.profile.level+'</span>';
+  $('#logout-btn').innerHTML = icon('logout');
+  $('#brand-mark').innerHTML = icon('bolt','ic-lg');
+  $('#auth-glyph').innerHTML = icon('bolt','ic-lg');
+}
+
+/* ============================ RENDER: DASHBOARD ============================ */
+function renderDashboard(){
+  const p = state.profile;
+  const need = xpToNext(p.level);
+  const xpPct = Math.min(100, Math.round(p.xp / need * 100));
+  const defs = questDefs();
+  const doneCount = defs.filter(q => questItem(q.id).done).length;
+  const stats = [
+    ['str','Strength','sword'], ['end','Endurance','shield'],
+    ['agi','Agility','wind'], ['vit','Vitality','heart']
+  ];
+  const quick = defs.slice(0,3).map(q => {
+    const it = questItem(q.id);
+    const pct = Math.min(100, Math.round(it.progress / q.target * 100));
+    return '<div class="quick-item">'+
+      '<div class="qi-ic">'+icon(it.done?'check':q.icon)+'</div>'+
+      '<div class="qi-body"><b>'+esc(q.name)+'</b>'+
+        '<div class="bar"><div class="fill" style="width:'+(it.done?100:pct)+'%"></div></div></div>'+
+      '<div class="qi-xp">+'+q.xp+' XP</div>'+
+    '</div>';
+  }).join('');
+
+  $('#view-dashboard').innerHTML =
+  '<div class="section-head"><h2>Hunter Dashboard</h2><p>Awakened Protocol // Status Overview</p></div>'+
+  '<div class="two-col">'+
+    '<div class="stack">'+
+      '<div class="panel hunter-card">'+
+        '<div class="hunter-top">'+
+          '<div class="avatar">'+icon('user','ic-lg')+'<div class="lv">Lv '+p.level+'</div></div>'+
+          '<div class="hunter-id">'+
+            '<div class="hname">'+esc(p.name)+'</div>'+
+            '<div class="hmeta">'+
+              '<span class="tag">'+rankOf(p.level)+'-Rank Hunter</span>'+
+              '<span class="tag xp">'+p.totalXp.toLocaleString()+' Total XP</span>'+
+            '</div>'+
+          '</div>'+
+          '<div class="rank-badge">'+rankOf(p.level)+'<small>Rank</small></div>'+
+        '</div>'+
+        '<div class="xp-row">'+
+          '<div class="xp-label"><span>Experience</span><b>'+p.xp+' / '+need+' XP</b></div>'+
+          '<div class="bar"><div class="fill" style="width:'+xpPct+'%"></div></div>'+
+          '<div class="xp-label" style="margin:9px 0 0"><span>'+(need-p.xp)+' XP to Level '+(p.level+1)+'</span><span>'+xpPct+'%</span></div>'+
+        '</div>'+
+      '</div>'+
+
+      '<div class="stat-grid">'+
+        stats.map(([k,label,ic]) =>
+          '<div class="stat-card"><div class="sc-head">'+icon(ic,'ic-sm')+' '+label+'</div>'+
+          '<div class="sc-val">'+p.stats[k]+'<small>pts</small></div>'+
+          '<div class="sc-bar"><i style="width:'+statBar(p.stats[k])+'%"></i></div></div>').join('')+
+      '</div>'+
+
+      '<div class="panel streak-strip flat">'+
+        '<div class="streak-flame">'+icon('flame','ic-lg')+'</div>'+
+        '<div><div class="sv">'+p.streak+' Day Streak</div>'+
+        '<div class="sd">Best: '+(p.bestStreak||0)+' days · Keep the chain alive</div></div>'+
+      '</div>'+
+    '</div>'+
+
+    '<div class="stack">'+
+      '<div class="panel">'+
+        '<div class="panel-title">'+icon('target','ic-sm')+' Today\'s Quests — '+doneCount+'/'+defs.length+'</div>'+
+        '<div class="quick-list">'+quick+'</div>'+
+        '<div style="margin-top:14px"><button class="btn primary block" data-action="nav" data-view="quests">Open Quest Log</button></div>'+
+      '</div>'+
+      '<div class="panel">'+
+        '<div class="panel-title">'+icon('fort','ic-sm')+' Recommended Dungeon</div>'+
+        '<div class="quick-item" style="border:0;background:transparent;padding:6px 0">'+
+          '<div class="qi-ic">'+icon(recommendedDungeon().icon)+'</div>'+
+          '<div class="qi-body"><b>'+esc(recommendedDungeon().name)+'</b>'+
+            '<div class="muted" style="font-size:9.5px;letter-spacing:.14em;margin-top:5px">'+esc(recommendedDungeon().cat)+' · +'+recommendedDungeon().xp+' XP</div></div>'+
+        '</div>'+
+        '<div style="margin-top:12px"><button class="btn ghost block" data-action="nav" data-view="dungeons">View Dungeons</button></div>'+
+      '</div>'+
+      '<div class="sys-msg">'+
+        '<b>[ System Message ]</b>'+
+        'You have awakened to the Shadow System. Your daily life is now your training ground. '+
+        'Complete quests, clear dungeons and grow stronger — one honest repetition at a time.'+
+      '</div>'+
+    '</div>'+
+  '</div>';
+}
+function recommendedDungeon(){
+  const available = dungeonDefs().filter(d => state.profile.level >= d.reqLevel);
+  return available[available.length - 1] || dungeonDefs()[0];
+}
+
+/* ============================ RENDER: QUESTS ============================ */
+function renderQuests(){
+  const defs = questDefs();
+  const doneCount = defs.filter(q => questItem(q.id).done).length;
+  const cards = defs.map(q => {
+    const it = questItem(q.id);
+    const pct = Math.min(100, Math.round(it.progress / q.target * 100));
+    return '<article class="quest-card'+(it.done?' done':'')+'">'+
+      '<div class="q-top">'+
+        '<div class="q-ic">'+icon(it.done?'check':q.icon)+'</div>'+
+        '<div class="q-info">'+
+          '<div class="q-tags">'+
+            '<span class="tag">'+esc(q.cat)+'</span>'+
+            '<span class="tag xp">+'+q.xp+' XP</span>'+
+            '<span class="tag plain">+1 '+q.stat.toUpperCase()+'</span>'+
+            (it.done ? '<span class="tag ok">Completed</span>' : '')+
+          '</div>'+
+          '<div class="quest-title">'+esc(q.name)+'</div>'+
+          '<p class="q-desc">'+esc(q.desc)+'</p>'+
+        '</div>'+
+      '</div>'+
+      '<div class="q-progress">'+
+        '<div class="q-bar-label"><span>'+it.progress+' / '+q.target+' '+esc(q.unit)+'</span><span>'+pct+'%</span></div>'+
+        '<div class="bar"><div class="fill" style="width:'+(it.done?100:pct)+'%"></div></div>'+
+      '</div>'+
+      '<div class="q-actions">'+
+        '<button class="btn ghost sm" data-action="quest-log" data-id="'+q.id+'"'+(it.done?' disabled':'')+'>'+icon('plus','ic-sm')+' '+q.step+' '+esc(q.unit)+'</button>'+
+        '<button class="btn '+(it.done?'ghost':'primary')+' sm" data-action="quest-complete" data-id="'+q.id+'"'+(it.done?' disabled':'')+'>'+
+          (it.done ? icon('check','ic-sm')+' Claimed' : 'Complete Quest')+'</button>'+
+      '</div>'+
+    '</article>';
+  }).join('');
+
+  $('#view-quests').innerHTML =
+  '<div class="section-head"><h2>Daily Quests</h2><p>Objective Log // Reset at Midnight</p></div>'+
+  '<div class="stack">'+
+    '<div class="panel flat" style="padding:16px">'+
+      '<div class="control-row">'+
+        '<div class="countdown">'+icon('clock','ic-sm')+' Reset In <span id="reset-timer">--:--:--</span></div>'+
+        '<div class="seg" role="group" aria-label="Experience level">'+
+          ['beginner','intermediate','advanced'].map(x =>
+            '<button data-action="set-exp" data-value="'+x+'" class="'+(state.profile.experience===x?'active':'')+'">'+x+'</button>').join('')+
+        '</div>'+
+        '<button class="switch '+(state.profile.restDay?'on':'')+'" data-action="toggle-rest" aria-pressed="'+state.profile.restDay+'">'+
+          '<span class="track"><span class="knob"></span></span> Rest Day</button>'+
+      '</div>'+
+      '<div class="q-bar-label" style="margin:14px 0 7px"><span>Quest Completion</span><span>'+doneCount+' / '+defs.length+'</span></div>'+
+      '<div class="bar"><div class="fill" style="width:'+Math.round(doneCount/defs.length*100)+'%"></div></div>'+
+    '</div>'+
+
+    '<div class="directive">'+icon('info')+'<div><b>System Directive — Safety</b>'+
+      '<p>Pain is not progress. Scale every exercise to your current level — wall push-ups and reduced range of motion are valid training. '+
+      'Rest days are part of the protocol, not a failure. If you feel sharp or persistent pain, stop immediately and consult a qualified professional.</p></div></div>'+
+
+    (state.profile.restDay
+      ? '<div class="panel flat" style="padding:14px 16px;border-left:2px solid var(--ok)">'+
+        '<p style="font-size:11px;line-height:2;letter-spacing:.05em;color:#b7ffe2">'+
+        '<b class="font-display" style="letter-spacing:.2em;font-size:10px;color:var(--ok);display:block;margin-bottom:4px">REST DAY ACTIVE</b>'+
+        'Strength quests are suspended today. Gentle movement, hydration and sleep will return you stronger.</p></div>'
+      : '')+
+
+    '<div class="quest-grid">'+cards+'</div>'+
+  '</div>';
+  updateCountdown();
+}
+function updateCountdown(){
+  const el = $('#reset-timer'); if(!el) return;
+  const now = new Date();
+  const midnight = new Date(now); midnight.setHours(24,0,0,0);
+  let diff = Math.max(0, midnight - now);
+  const h = String(Math.floor(diff/3.6e6)).padStart(2,'0');
+  const m = String(Math.floor(diff%3.6e6/6e4)).padStart(2,'0');
+  const s = String(Math.floor(diff%6e4/1000)).padStart(2,'0');
+  el.textContent = h+':'+m+':'+s;
+}
+
+/* ============================ RENDER: DUNGEONS ============================ */
+function renderDungeons(){
+  const cards = dungeonDefs().map(d => {
+    const locked = state.profile.level < d.reqLevel;
+    const rec = dungeonRec(d.id);
+    const stars = '★'.repeat(d.diff)+'☆'.repeat(5-d.diff);
+    return '<article class="dungeon-card'+(locked?' locked':'')+(d.boss?' boss':'')+'">'+
+      '<div class="d-head">'+
+        '<div class="d-glyph">'+icon(locked?'lock':d.icon,'ic-lg')+'</div>'+
+        '<div style="flex:1;min-width:0">'+
+          '<div class="d-name">'+esc(d.name)+'</div>'+
+          '<div class="d-cat">'+
+            '<span class="tag'+(d.boss?' warn':'')+'">'+esc(d.cat)+'</span>'+
+            '<span class="tag xp">+'+d.xp+' XP</span>'+
+            '<span class="d-stars">'+stars+'</span>'+
+          '</div>'+
+        '</div>'+
+      '</div>'+
+      '<p class="d-desc">'+esc(d.desc)+'</p>'+
+      '<div class="d-obj">'+
+        d.objectives.map(o => '<div class="d-obj-item">'+icon('target','ic-sm')+' '+esc(o.name)+' — '+o.target+' '+esc(o.unit)+'</div>').join('')+
+      '</div>'+
+      '<div class="d-foot">'+
+        '<button class="btn '+(locked?'ghost':'primary')+'" data-action="dungeon-enter" data-id="'+d.id+'"'+(locked?' disabled':'')+'>'+
+          (locked ? icon('lock','ic-sm')+' Unlocks at Lv '+d.reqLevel : (rec.clears>0 ? 'Re-Enter Dungeon' : 'Enter Dungeon'))+'</button>'+
+        '<div class="d-clears">'+(rec.clears>0 ? rec.clears+' clear'+(rec.clears>1?'s':'') : 'Never cleared')+'</div>'+
+      '</div>'+
+    '</article>';
+  }).join('');
+
+  $('#view-dungeons').innerHTML =
+  '<div class="section-head"><h2>Dungeons</h2><p>Workout Trials // Real Strength Forged Here</p></div>'+
+  '<div class="stack">'+
+    '<div class="directive">'+icon('info')+'<div><b>Entering A Dungeon</b>'+
+      '<p>Each dungeon is a structured workout. Log your real repetitions as you complete them — the system only rewards honest effort. '+
+      'Clear a dungeon for full rewards; replays grant reduced XP.</p></div></div>'+
+    '<div class="dungeon-grid">'+cards+'</div>'+
+  '</div>';
+}
+
+/* ============================ RENDER: STATUS ============================ */
+function renderStatus(){
+  const p = state.profile;
+  const need = xpToNext(p.level);
+  const nr = nextRankInfo(p.level);
+  const stats = [['str','Strength','sword'],['end','Endurance','shield'],['agi','Agility','wind'],['vit','Vitality','heart']];
+  const achCount = Object.keys(state.achievements).length;
+
+  $('#view-status').innerHTML =
+  '<div class="section-head"><h2>Player Status</h2><p>Full Attribute Record // '+cloudStatusText()+'</p></div>'+
+  '<div class="stack">'+
+    '<div class="panel">'+
+      '<div class="panel-title">'+icon('user','ic-sm')+' Identity</div>'+
+      '<div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">'+
+        '<div class="avatar">'+icon('user','ic-lg')+'<div class="lv">Lv '+p.level+'</div></div>'+
+        '<div style="flex:1;min-width:180px">'+
+          '<div class="hunter-id"><div class="hname">'+esc(p.name)+'</div>'+
+          '<div class="hmeta"><span class="tag xp">'+rankOf(p.level)+'-Rank</span>'+
+          '<span class="tag plain">Joined '+fmtDate(p.joinedAt)+'</span></div></div>'+
+        '</div>'+
+        '<div class="rank-badge">'+rankOf(p.level)+'<small>Rank</small></div>'+
+      '</div>'+
+      '<div style="margin-top:16px;display:flex;gap:9px;flex-wrap:wrap">'+
+        '<input id="name-input" maxlength="22" value="'+esc(p.name)+'" style="flex:1;min-width:180px" aria-label="Hunter name">'+
+        '<button class="btn ghost sm" data-action="save-name">'+icon('save','ic-sm')+' Save Name</button>'+
+      '</div>'+
+    '</div>'+
+
+    '<div class="panel">'+
+      '<div class="panel-title">'+icon('star','ic-sm')+' Attributes</div>'+
+      '<div class="stat-grid">'+ stats.map(([k,label,ic]) =>
+        '<div class="stat-card"><div class="sc-head">'+icon(ic,'ic-sm')+' '+label+'</div>'+
+        '<div class="sc-val">'+p.stats[k]+'<small>pts</small></div>'+
+        '<div class="sc-bar"><i style="width:'+statBar(p.stats[k])+'%"></i></div></div>').join('')+
+      '</div>'+
+    '</div>'+
+
+    '<div class="panel">'+
+      '<div class="panel-title">'+icon('crown','ic-sm')+' Rank Ladder</div>'+
+      '<div class="rank-ladder">'+ RANKS.map(R => {
+        const reached = p.level >= R.min;
+        const current = rankOf(p.level) === R.r;
+        return '<div class="rank-step'+(reached?' reached':'')+(current?' current':'')+'">'+
+          '<div class="rs">'+R.r+'</div><div class="rl">Lv '+R.min+'</div></div>';
+      }).join('')+'</div>'+
+      '<div class="q-bar-label" style="margin:16px 0 8px"><span>Level '+p.level+'</span>'+
+        '<span>'+(nr ? (nr.min - p.level)+' levels to '+nr.r+'-Rank' : 'Maximum Rank')+'</span></div>'+
+      '<div class="bar gold-bar"><div class="fill" style="width:'+(nr ? Math.min(100, Math.round((p.level - RANKS[RANKS.findIndex(r=>r.r===rankOf(p.level))].min) / (nr.min - RANKS[RANKS.findIndex(r=>r.r===rankOf(p.level))].min) * 100)) : 100)+'%"></div></div>'+
+    '</div>'+
+
+    '<div class="panel">'+
+      '<div class="panel-title">'+icon('target','ic-sm')+' Lifetime Record</div>'+
+      '<div class="detail-rows">'+
+        '<div class="detail-row"><span>Current Level</span><b>'+p.level+'</b></div>'+
+        '<div class="detail-row"><span>Total XP Earned</span><b>'+p.totalXp.toLocaleString()+'</b></div>'+
+        '<div class="detail-row"><span>XP To Next Level</span><b>'+(need - p.xp)+' XP</b></div>'+
+        '<div class="detail-row"><span>Quests Completed</span><b>'+p.questsCompleted+'</b></div>'+
+        '<div class="detail-row"><span>Dungeons Cleared</span><b>'+p.dungeonsCleared+'</b></div>'+
+        '<div class="detail-row"><span>Current Streak</span><b>'+p.streak+' days</b></div>'+
+        '<div class="detail-row"><span>Best Streak</span><b>'+(p.bestStreak||0)+' days</b></div>'+
+        '<div class="detail-row"><span>Achievements</span><b>'+achCount+' / '+ACHIEVEMENTS.length+'</b></div>'+
+        '<div class="detail-row"><span>Storage</span><b>'+cloudStatusText()+'</b></div>'+
+      '</div>'+
+    '</div>'+
+
+    '<div class="panel">'+
+      '<div class="panel-title">'+icon('clock','ic-sm')+' System Activity Log</div>'+
+      '<div class="activity-log">'+
+        (state.log.length
+          ? state.log.map(l => '<div class="act-item">'+icon(l.ic||'info','ic-sm')+'<div>'+esc(l.text)+'<time>'+fmtTime(l.t)+'</time></div></div>').join('')
+          : '<div class="act-item">'+icon('info','ic-sm')+'<div>No activity recorded yet. Complete your first quest.</div></div>')+
+      '</div>'+
+    '</div>'+
+
+    '<div class="panel">'+
+      '<div class="panel-title">'+icon('refresh','ic-sm')+' System Controls</div>'+
+      '<div class="control-row">'+
+        '<button class="btn ghost" data-action="logout">'+icon('logout','ic-sm')+' Log Out</button>'+
+        '<button class="btn danger-btn" data-action="reset-progress">Reset Progress</button>'+
+      '</div>'+
+      '<p class="muted" style="font-size:10px;line-height:2;letter-spacing:.06em;margin-top:12px">'+
+        'Resetting erases your level, stats, quest history and achievements for this account. This cannot be undone.</p>'+
+    '</div>'+
+  '</div>';
+}
+
+/* ============================ RENDER: ACHIEVEMENTS ============================ */
+function renderAchievements(){
+  const cards = ACHIEVEMENTS.map(a => {
+    const unlockedAt = state.achievements[a.id];
+    const [cur, goal] = a.prog(state);
+    const pct = Math.min(100, Math.round(cur / goal * 100));
+    return '<article class="ach-card '+(unlockedAt?'unlocked':'locked')+'">'+
+      '<div class="ach-icon">'+icon(unlockedAt ? a.icon : 'lock','ic-lg')+'</div>'+
+      '<div class="ach-name">'+esc(a.name)+'</div>'+
+      '<p class="ach-desc">'+esc(a.desc)+'</p>'+
+      (unlockedAt
+        ? '<div style="margin-top:13px"><span class="tag xp">'+icon('trophy','ic-sm')+' Unlocked · '+fmtDate(unlockedAt)+'</span></div>'
+        : '<div class="ach-prog">'+
+            '<div class="q-bar-label"><span>'+esc(a.hint)+'</span><span>'+Math.min(cur,goal)+' / '+goal+'</span></div>'+
+            '<div class="bar"><div class="fill" style="width:'+pct+'%"></div></div>'+
+          '</div>')+
+    '</article>';
+  }).join('');
+
+  $('#view-achievements').innerHTML =
+  '<div class="section-head"><h2>Shadow Achievements</h2><p>Titles Of The Awakened // '+Object.keys(state.achievements).length+' / '+ACHIEVEMENTS.length+' Acquired</p></div>'+
+  '<div class="stack">'+
+    '<div class="sys-msg"><b>[ System Message ]</b>'+
+      'Titles are permanent records of your growth. Each one is earned through real action — not intention.</div>'+
+    '<div class="ach-grid">'+cards+'</div>'+
+  '</div>';
+}
+
+/* ============================ ROUTER / RENDER ROOT ============================ */
+const NAV_ITEMS = [
+  { id:'dashboard', label:'Dashboard', icon:'grid' },
+  { id:'quests', label:'Quests', icon:'scroll' },
+  { id:'dungeons', label:'Dungeons', icon:'fort' },
+  { id:'status', label:'Status', icon:'user' },
+  { id:'achievements', label:'Awards', icon:'trophy' }
+];
+function renderNav(){
+  $('#main-nav').innerHTML = NAV_ITEMS.map(n =>
+    '<button class="nav-item'+(currentView===n.id?' active':'')+'" data-action="nav" data-view="'+n.id+'">'+
+      '<span class="nav-glow"></span>'+icon(n.icon)+'<span>'+n.label+'</span></button>').join('');
+}
+function renderAll(){
+  if($('#app').classList.contains('hidden')) return;
+  renderHeader();
+  renderDashboard();
+  renderQuests();
+  renderDungeons();
+  renderStatus();
+  renderAchievements();
+  renderNav();
+}
+function showView(view){
+  if(!NAV_ITEMS.some(n => n.id === view)) view = 'dashboard';
+  currentView = view;
+  $$$$('.view').forEach(v => v.classList.remove('active'));
+  const el = $('#view-'+view);
+  if(el){ el.classList.remove('active'); void el.offsetWidth; el.classList.add('active'); }
+  renderNav();
+  if(view === 'quests') updateCountdown();
+  window.scrollTo({ top:0, behavior:'instant' in window ? 'instant' : 'auto' });
+  if(location.hash !== '#'+view) history.replaceState(null, '', '#'+view);
+}
+
+/* ============================ AUTH ============================ */
+let sessionAuth = null; // supabase user object or local pseudo-user
+function showAuth(){
+  $('#app').classList.add('hidden');
+  $('#auth-screen').classList.remove('hidden');
+  const pill = $('#cloud-pill');
+  if(cloudActive){
+    pill.classList.add('on');
+    $('#cloud-pill-text').textContent = 'Cloud Link: Active (Supabase)';
+  }else{
+    pill.classList.remove('on');
+    $('#cloud-pill-text').textContent = 'Local Archive Mode (offline-capable)';
+  }
+}
+function enterApp(){
+  $('#auth-screen').classList.add('hidden');
+  $('#app').classList.remove('hidden');
+  renderAll();
+  showView((location.hash || '#dashboard').slice(1));
+  rollDaily();
+  checkAchievements();
+  checkUnlocks();
+  notify('info','System Online','Welcome back, '+state.profile.name+'. Your daily quests await.');
+}
+function setAuthMsg(id, text, cls){
+  const el = $(id); if(!el) return;
+  el.textContent = text || '';
+  el.className = 'form-msg '+(cls||'');
+}
+function localAccounts(){ try{ return JSON.parse(localStorage.getItem('shadow_system_accounts')||'{}'); }catch(e){ return {}; } }
+function saveLocalAccounts(a){ try{ localStorage.setItem('shadow_system_accounts', JSON.stringify(a)); }catch(e){} }
+function hashPw(str){
+  let h = 5381;
+  for(let i=0;i<str.length;i++){ h = ((h<<5)+h) ^ str.charCodeAt(i); }
+  return (h>>>0).toString(16)+':'+str.length;
+}
+async function doSignup(name, email, password){
+  email = email.trim().toLowerCase();
+  if(cloudActive && sb){
+    try{
+      const { data, error } = await sb.auth.signUp({
+        email, password, options:{ data:{ name:name.trim() } }
+      });
+      if(error) throw error;
+      if(data && data.session){
+        sessionAuth = data.session.user;
+        currentUserId = data.session.user.id;
+        state = defaultState(name.trim());
+        persist();
+        await tryLoadCloud();
+        enterApp();
+        return { ok:true };
+      }
+      return { ok:true, pending:true };
+    }catch(e){
+      return { ok:false, msg: e.message || 'Cloud sign-up failed.' };
+    }
+  }
+  // local fallback account
+  const accs = localAccounts();
+  if(accs[email]) return { ok:false, msg:'An account with this email already exists on this device.' };
+  accs[email] = { hash: hashPw(password), name: name.trim() };
+  saveLocalAccounts(accs);
+  localStorage.setItem('shadow_system_session', JSON.stringify({ email }));
+  sessionAuth = { id:'local::'+email, email };
+  currentUserId = 'local::'+email;
+  state = loadLocal(currentUserId) || defaultState(name.trim());
+  persist();
+  enterApp();
+  return { ok:true };
+}
+async function doLogin(email, password){
+  email = email.trim().toLowerCase();
+  if(cloudActive && sb){
+    try{
+      const { data, error } = await sb.auth.signInWithPassword({ email, password });
+      if(error) throw error;
+      sessionAuth = data.session.user;
+      currentUserId = data.session.user.id;
+      await tryLoadCloud();
+      enterApp();
+      return { ok:true };
+    }catch(e){
+      return { ok:false, msg: e.message || 'Login failed.' };
+    }
+  }
+  const accs = localAccounts();
+  const acc = accs[email];
+  if(!acc || acc.hash !== hashPw(password)) return { ok:false, msg:'Invalid email or password for this device.' };
+  localStorage.setItem('shadow_system_session', JSON.stringify({ email }));
+  sessionAuth = { id:'local::'+email, email };
+  currentUserId = 'local::'+email;
+  state = loadLocal(currentUserId) || defaultState(acc.name);
+  persist();
+  enterApp();
+  return { ok:true };
+}
+async function tryLoadCloud(){
+  if(!cloudActive || !sb || !sessionAuth || currentUserId==='guest') return;
+  try{
+    const { data, error } = await sb.from('player_progress').select('data').eq('user_id', currentUserId).maybeSingle();
+    if(error) throw error;
+    if(data && data.data){
+      state = deepMerge(defaultState(state.profile.name), data.data);
+      saveLocal();
+    }else{
+      persist();
+    }
+  }catch(e){
+    const local = loadLocal(currentUserId);
+    if(local) state = local;
+    if(!cloudWarned){ cloudWarned = true; notify('info','Local Archive Active','Cloud read failed — continuing with device storage.'); }
+  }
+}
+async function doLogout(){
+  if(cloudActive && sb && sessionAuth && currentUserId !== 'guest' && !String(currentUserId).startsWith('local::')){
+    try{ await sb.auth.signOut(); }catch(e){}
+  }
+  saveLocal();
+  try{ localStorage.removeItem('shadow_system_session'); }catch(e){}
+  sessionAuth = null;
+  currentUserId = 'guest';
+  state = defaultState('Hunter');
+  $('#overlay-root').innerHTML = '';
+  showAuth();
+  notify('info','Logged Out','Your progress has been saved. The system awaits your return.');
+}
+
+/* ============================ EVENTS ============================ */
+document.addEventListener('click', e => {
+  const t = e.target.closest('[data-action]');
+  if(!t) return;
+  const action = t.dataset.action;
+
+  switch(action){
+    case 'nav':
+      showView(t.dataset.view); break;
+
+    case 'auth-tab':{
+      const tab = t.dataset.tab;
+      $$('.auth-tab').forEach(b => b.classList.toggle('active', b === t));
+      ('#login-form').classList.toggle('hidden', tab !== 'login');
+      $('#signup-form').classList.toggle('hidden', tab !== 'signup');
+      break;
+    }
+
+    case 'guest':{
+      sessionAuth = { id:'guest', email:'guest' };
+      currentUserId = 'guest';
+      state = loadLocal('guest') || defaultState('Hunter');
+      saveLocal();
+      enterApp();
+      break;
+    }
+
+    case 'quest-log':
+      logQuestProgress(t.dataset.id, parseInt(t.dataset.delta||'0',10) || undefined); break;
+
+    case 'quest-complete':
+      completeQuest(t.dataset.id); break;
+
+    case 'set-exp':{
+      state.profile.experience = t.dataset.value;
+      logEvent('Experience level set to '+t.dataset.value, 'target');
+      persist(); renderAll();
+      notify('info','Training Profile Updated','Exercise targets now scaled for: '+t.dataset.value+'.');
+      break;
+    }
+
+    case 'toggle-rest':{
+      state.profile.restDay = !state.profile.restDay;
+      logEvent(state.profile.restDay ? 'Rest day activated' : 'Rest day deactivated — training resumes', 'moon');
+      persist(); renderAll();
+      notify('info', state.profile.restDay ? 'Rest Day Activated' : 'Training Resumes',
+        state.profile.restDay
+          ? 'Strength quests suspended. Recovery is part of the protocol.'
+          : 'Strength quests are back in your daily log.');
+      break;
+    }
+
+    case 'dungeon-enter': enterDungeon(t.dataset.id); break;
+
+    case 'dungeon-log':{
+      const idx = parseInt(t.dataset.idx,10);
+      const delta = parseInt(t.dataset.delta,10);
+      logDungeonObjective(t.dataset.id, idx, delta);
+      break;
+    }
+
+    case 'close-overlay': closeOverlay(); break;
+    case 'noop': break;
+
+    case 'save-name':{
+      const input = $('#name-input');
+      const val = (input.value || '').trim().slice(0,22);
+      if(!val){ notify('info','Invalid Name','Hunter name cannot be empty.'); break; }
+      state.profile.name = val;
+      logEvent('Hunter name updated to "'+val+'"', 'user');
+      persist(); renderAll();
+      notify('info','Profile Updated','Your hunter name is now '+val+'.');
+      break;
+    }
+
+    case 'logout': doLogout(); break;
+
+    case 'reset-progress':{
+      if(confirm('Reset all progress? This erases level, stats, quests and achievements for this account.')){
+        state = defaultState(state.profile.name);
+        persist(); renderAll(); showView('dashboard');
+        notify('info','Progress Reset','The system has been restored to Level 1. A new journey begins.');
+      }
+      break;
+    }
+  }
+});
+
+document.addEventListener('submit', async e => {
+  const form = e.target;
+  if(form.id === 'login-form'){
+    e.preventDefault();
+    const fd = new FormData(form);
+    setAuthMsg('#login-msg', 'Authenticating…', 'ok');
+    const res = await doLogin(fd.get('email'), fd.get('password'));
+    if(!res.ok) setAuthMsg('#login-msg', res.msg, 'err');
+    else setAuthMsg('#login-msg', '', '');
+  }
+  if(form.id === 'signup-form'){
+    e.preventDefault();
+    const fd = new FormData(form);
+    setAuthMsg('#signup-msg', 'Awakening…', 'ok');
+    const res = await doSignup(fd.get('name'), fd.get('email'), fd.get('password'));
+    if(!res.ok){ setAuthMsg('#signup-msg', res.msg, 'err'); }
+    else if(res.pending){
+      setAuthMsg('#signup-msg', 'Account created. Confirm your email (if enabled), then log in.', 'ok');
+      $$$$('.auth-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === 'login'));
+      $('#login-form').classList.remove('hidden');
+      $('#signup-form').classList.add('hidden');
+    }else setAuthMsg('#signup-msg', '', '');
+  }
+});
+
+window.addEventListener('hashchange', () => {
+  if(!$('#app').classList.contains('hidden')) showView((location.hash || '#dashboard').slice(1));
+});
+
+/* ============================ TICKERS ============================ */
+setInterval(() => {
+  if($('#app').classList.contains('hidden')) return;
+  updateCountdown();
+}, 1000);
+setInterval(() => { rollDaily(); }, 60000);
+
+/* ============================ BOOT ============================ */
+(async function boot(){
+  await initCloud();
+  if(cloudActive && sb){
+    try{
+      const { data } = await sb.auth.getSession();
+      if(data && data.session){
+        sessionAuth = data.session.user;
+        currentUserId = data.session.user.id;
+        state = loadLocal(currentUserId) || defaultState((data.session.user.user_metadata||{}).name || 'Hunter');
+        await tryLoadCloud();
+        setTimeout(() => { $('#boot').classList.add('done'); enterApp(); }, 1150);
+        return;
+      }
+      sb.auth.onAuthStateChange((event, session) => {
+        if(event === 'SIGNED_OUT'){
+          sessionAuth = null;
+          if(!$('#app').classList.contains('hidden')) showAuth();
+        }
+      });
+    }catch(e){ /* fall through to local */ }
+  }
+  let sess = null;
+  try{ sess = JSON.parse(localStorage.getItem('shadow_system_session') || 'null'); }catch(e){}
+  if(sess && sess.email){
+    const accs = localAccounts();
+    const acc = accs[sess.email];
+    sessionAuth = { id:'local::'+sess.email, email:sess.email };
+    currentUserId = 'local::'+sess.email;
+    state = loadLocal(currentUserId) || defaultState(acc ? acc.name : 'Hunter');
+    setTimeout(() => { $('#boot').classList.add('done'); enterApp(); }, 1150);
+    return;
+  }
+  setTimeout(() => {
+    $('#boot').classList.add('done');
+    showAuth();
+  }, 1150);
+})();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" onerror="void 0"></script>
+</body>
+</html>
